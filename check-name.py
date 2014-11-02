@@ -32,28 +32,21 @@ def main():
                                        'llvm/build/Release/lib')
     index = clang.cindex.Index.create()
     tu = index.parse(sys.argv[1], sys.argv[2:])
-    print '<top>'
-    print('<TranslationUnit>' + tu.spelling + '</TranslationUnit>')
+    print('Translation unit:' + tu.spelling)
     for d in tu.diagnostics:
-        print '<diagnostic>'
-        print '<location>' + to_string(d.location) + '</location>'
-        print '<spelling>' + d.spelling + '</spelling>'
-        print '</diagnostic>'
+        print 'diagnostic:', to_string(d.location), d.spelling
     print_all(tu.cursor)
-    print '</top>'
 
 
 def print_all(node):
     """ Find all references to the type named 'typename'
     """
-    print '<' + node.kind.name + '>'
-    print '<location>' + to_string(node.location) + '</location>'
-    print '<kind>' + node.kind.name + '</kind>'
-    print '<name>' + node.spelling + '</name>'
+    print(to_string(node.location) + ' ' +
+          node.kind.name + ' ' +
+          node.spelling)
     # Recurse for children of this node
     for child in node.get_children():
         print_all(child)
-    print('</' + node.kind.name + '>')
 
 
 def to_string(location):
