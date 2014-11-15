@@ -70,6 +70,11 @@ def print_variable(variable):
     parent = variable.lexical_parent.kind
     is_global = (parent == clang.cindex.CursorKind.NAMESPACE or
                  parent == clang.cindex.CursorKind.TRANSLATION_UNIT)
+    is_array = (type == clang.cindex.TypeKind.CONSTANTARRAY or
+                type == clang.cindex.TypeKind.INCOMPLETEARRAY or
+                type == clang.cindex.TypeKind.VARIABLEARRAY or
+                type == clang.cindex.TypeKind.DEPENDENTSIZEDARRAY)
+
     print(to_string(variable.location), variable.kind.name,
           variable.spelling,
           'type:', variable.type.spelling,
@@ -77,7 +82,8 @@ def print_variable(variable):
           'is_pointer:', is_pointer,
           'is_reference:', is_reference,
           'is_global:', is_global,
-          'is_const_qualified', variable.type.is_const_qualified())
+          'is_const_qualified:', variable.type.is_const_qualified(),
+          'is_array:', is_array)
 
 
 def to_string(location):
