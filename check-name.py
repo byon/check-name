@@ -23,6 +23,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+from __future__ import print_function
 import sys
 import clang.cindex
 
@@ -32,21 +33,22 @@ def main():
                                        'llvm/build/Release/lib')
     index = clang.cindex.Index.create()
     tu = index.parse(sys.argv[1], sys.argv[2:])
-    print('Translation unit:' + tu.spelling)
+    print('Translation unit:', tu.spelling)
     for d in tu.diagnostics:
-        print 'diagnostic:', to_string(d.location), d.spelling
-    print_all(tu.cursor)
+        print('diagnostic:', to_string(d.location), d.spelling)
+    print_symbols(tu.cursor)
 
 
-def print_all(node):
-    """ Find all references to the type named 'typename'
-    """
-    print(to_string(node.location) + ' ' +
-          node.kind.name + ' ' +
-          node.spelling)
+def print_symbols(node):
+    if node.location.file and 'myrrh' not in node.location.file.name:
+        print('skipping', to_string(node.location), node.kind.name,
+              node.spelling)
+        return
+    if node.kind.is_declaration():
+        print(to_string(node.location), node.kind.name, node.spelling)
     # Recurse for children of this node
     for child in node.get_children():
-        print_all(child)
+        print_symbols(child)
 
 
 def to_string(location):
