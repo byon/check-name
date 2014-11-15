@@ -67,12 +67,17 @@ def print_variable(variable):
     is_pointer = (type == clang.cindex.TypeKind.POINTER or
                   type == clang.cindex.TypeKind.MEMBERPOINTER)
     is_static = variable.storage_class == clang.cindex.StorageClass.STATIC
+    parent = variable.lexical_parent.kind
+    is_global = (parent == clang.cindex.CursorKind.NAMESPACE or
+                 parent == clang.cindex.CursorKind.TRANSLATION_UNIT)
     print(to_string(variable.location), variable.kind.name,
           variable.spelling,
           'type:', variable.type.spelling,
           'is_static:', is_static,
           'is_pointer:', is_pointer,
-          'is_reference:', is_reference)
+          'is_reference:', is_reference,
+          'is_global:', is_global,
+          'is_const_qualified', variable.type.is_const_qualified())
 
 
 def to_string(location):
