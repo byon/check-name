@@ -66,9 +66,11 @@ def print_variable(variable):
                     type == clang.cindex.TypeKind.RVALUEREFERENCE)
     is_pointer = (type == clang.cindex.TypeKind.POINTER or
                   type == clang.cindex.TypeKind.MEMBERPOINTER)
+    is_static = variable.storage_class == clang.cindex.StorageClass.STATIC
     print(to_string(variable.location), variable.kind.name,
           variable.spelling,
           'type:', variable.type.spelling,
+          'is_static:', is_static,
           'is_pointer:', is_pointer,
           'is_reference:', is_reference)
 
