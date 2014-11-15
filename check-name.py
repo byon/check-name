@@ -45,10 +45,32 @@ def print_symbols(node):
               node.spelling)
         return
     if node.kind.is_declaration():
-        print(to_string(node.location), node.kind.name, node.spelling)
+        if is_variable(node):
+            print_variable(node)
+        else:
+            print(to_string(node.location), node.kind.name, node.spelling)
     # Recurse for children of this node
     for child in node.get_children():
         print_symbols(child)
+
+
+def is_variable(candidate):
+    return (candidate.kind == clang.cindex.CursorKind.FIELD_DECL or
+            candidate.kind == clang.cindex.CursorKind.PARM_DECL or
+            candidate.kind == clang.cindex.CursorKind.VAR_DECL)
+
+
+def print_variable(variable):
+    type = variable.type.kind
+    is_reference = (type == clang.cindex.TypeKind.LVALUEREFERENCE or
+                    type == clang.cindex.TypeKind.RVALUEREFERENCE)
+    is_pointer = (type == clang.cindex.TypeKind.POINTER or
+                  type == clang.cindex.TypeKind.MEMBERPOINTER)
+    print(to_string(variable.location), variable.kind.name,
+          variable.spelling,
+          'type:', variable.type.spelling,
+          'is_pointer:', is_pointer,
+          'is_reference:', is_reference)
 
 
 def to_string(location):
