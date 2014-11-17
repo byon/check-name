@@ -22,45 +22,24 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import analysis
-import source_file
-from test import eq_, match_
-
-from behave import given, when, then
+import operator
+import re
 
 
-@given('an empty source file')
-def an_empty_source_file(context):
-    context.path = source_file.create('')
+def eq_(a, b, description=None):
+    _test(a, b, operator.eq, '==', description)
 
 
-@given('source with namespace "{name}"')
-def source_with_namespace(context, name):
-    context.path = source_file.create('namespace ' + name + '{}')
+def not_eq_(a, b, description=None):
+    _test(a, b, operator.ne, '!=', description)
 
 
-@when('analysis is made')
-def analysis_is_made(context):
-    context.result = analysis.run([context.path])
+def match_(a, b, description=None):
+    _test(a, b, re.search, ' matches ', description)
 
 
-@then('analysis should succeed')
-def analysis_should_succeed(context):
-    analysis.check_for_success(context.result)
-
-
-@then('there should be no output')
-def there_should_be_no_output(context):
-    eq_(context.result.stderr, '')
-    eq_(context.result.stdout, '')
-
-
-@then('analysis reports "{type}" "{name}" as "{cause}" rule violation')
-def analysis_reports_rule_violation(context, type, name, cause):
-    analysis.check_for_failure(context.result)
-    match_(': ' + type + ' "' + name + '" is not in ' + cause,
-           context.result.stderr)
-
-
-def create_arguments(context):
-    return ['check_name.py', context.path]
+def _test(a, b, operation, operation_as_string, given_description):
+    description = given_description if given_description else ''
+    message = (str(a) + ' ' + operation_as_string + ' ' + str(b) + ' ' +
+               description)
+    assert operation(a, b), message

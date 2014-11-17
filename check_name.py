@@ -31,9 +31,48 @@ def main(arguments):
     clang.cindex.conf.set_library_path('/home/byon/src/vendor/' +
                                        'llvm/build/Release/lib')
     index = clang.cindex.Index.create()
-    index.parse(arguments[1])
+    output = Output()
+    analyze_translation_unit(output, index.parse(arguments[1]))
+    if output.has_errors:
+        return 1
     return 0
 
 
+def analyze_translation_unit(output, translation_unit):
+    first = None
+    try:
+        first = next(translation_unit.cursor.get_children())
+    except StopIteration:
+        return
+    analyze_namespace(output, first)
+
+
+def analyze_namespace(output, namespace):
+    output.error(namespace.location, 'namespace', namespace.spelling,
+                 'is not in CamelCase')
+
+
+class Output:
+
+    def __init__(self):
+        self.error_count = 0
+
+    def error(self, location, type, symbol, reason):
+        output = '{}: {} "{}" {}'.format(location_to_string(location),
+                                         type, symbol, reason)
+        print(output, file=sys.stderr)
+        self.error_count += 1
+
+    @property
+    def has_errors(self):
+        return self.error_count > 0
+
+
+def location_to_string(location):
+    return (str(location.file) + ' (' +
+            str(location.line) + ', ' +
+            str(location.column) + ')')
+
+
 if __name__ == '__main__':
-    main(sys.argv)
+    sys.exit(main(sys.argv))
