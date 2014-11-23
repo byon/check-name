@@ -43,7 +43,7 @@ def test_analyzing_one_namespace(translation_unit, analyzer):
 
 @pytest.fixture
 def analyzer(request):
-    result = patch('analyze.analyze_namespace', autospec=True)
+    result = patch('analyze.is_camel_case', autospec=True)
     request.addfinalizer(patch.stopall)
     return result.start()
 
