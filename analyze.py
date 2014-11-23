@@ -23,22 +23,15 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-import analyze
-import report
-import sys
-import clang.cindex
+def analyze_nodes(output, translation_unit):
+    first = None
+    try:
+        first = next(translation_unit.cursor.get_children())
+    except StopIteration:
+        return
+    analyze_namespace(output, first)
 
 
-def main(arguments):
-    clang.cindex.conf.set_library_path('/home/byon/src/vendor/' +
-                                       'llvm/build/Release/lib')
-    index = clang.cindex.Index.create()
-    output = report.Output()
-    analyze.analyze_nodes(output, index.parse(arguments[1]))
-    if output.has_errors:
-        return 1
-    return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+def analyze_namespace(output, namespace):
+    output.error(namespace.location, 'namespace', namespace.spelling,
+                 'is not in CamelCase')

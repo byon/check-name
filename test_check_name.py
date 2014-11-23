@@ -66,9 +66,9 @@ class _Tester:
         self.index.parse.return_value = 'TranslationUnit'
         self.index_class.return_value = self.index
 
-        self.analyzer = self._add_patch('check_name.analyze_translation_unit')
+        self.analyzer = self._add_patch('analyze.analyze_nodes')
 
-        self.output_creator = self._add_patch('check_name.Output')
+        self.output_creator = self._add_patch('report.Output')
         self.output = MagicMock()
         self.output_creator.return_value = self.output
 

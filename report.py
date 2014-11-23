@@ -23,22 +23,27 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-import analyze
-import report
+from __future__ import print_function
 import sys
-import clang.cindex
 
 
-def main(arguments):
-    clang.cindex.conf.set_library_path('/home/byon/src/vendor/' +
-                                       'llvm/build/Release/lib')
-    index = clang.cindex.Index.create()
-    output = report.Output()
-    analyze.analyze_nodes(output, index.parse(arguments[1]))
-    if output.has_errors:
-        return 1
-    return 0
+class Output:
+
+    def __init__(self):
+        self.error_count = 0
+
+    def error(self, location, type, symbol, reason):
+        output = '{}: {} "{}" {}'.format(location_to_string(location),
+                                         type, symbol, reason)
+        print(output, file=sys.stderr)
+        self.error_count += 1
+
+    @property
+    def has_errors(self):
+        return self.error_count > 0
 
 
-if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+def location_to_string(location):
+    return (str(location.file) + ' (' +
+            str(location.line) + ', ' +
+            str(location.column) + ')')
