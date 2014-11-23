@@ -32,10 +32,17 @@ import clang.cindex
 
 
 def main(arguments):
-    options = parse_options_from_arguments(arguments)
+    output = report.Output()
+    try:
+        return do_analyzis(parse_options_from_arguments(arguments), output)
+    except clang.cindex.TranslationUnitLoadError as e:
+        output.error(str(e))
+        return 1
+
+
+def do_analyzis(options, output):
     clang.cindex.conf.set_library_path(options.llvm_path)
     index = clang.cindex.Index.create()
-    output = report.Output()
     analyze.analyze_nodes(output, index.parse(options.target_path))
     if output.has_errors:
         return 1

@@ -22,6 +22,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import clang
 import check_name
 from mock import MagicMock, patch
 import pytest
@@ -46,6 +47,16 @@ def test_analysis_will_pass_target_file_to_clang(tester):
 def test_analysis_is_done(tester):
     tester.test()
     tester.analyzer.assert_called_once_with(tester.output, 'TranslationUnit')
+
+
+def test_missing_source_file_is_an_error(tester):
+    assert 0 != tester.with_missing_target_path().test()
+
+
+def test_missing_source_file_is_reported(tester):
+    tester.with_missing_target_path().test()
+    expected = str(clang.cindex.TranslationUnitLoadError())
+    tester.output.error.assert_called_once_with(expected)
 
 
 def test_errors_are_noticed(tester):
@@ -86,6 +97,11 @@ class _Tester:
 
     def with_llvm_path(self, path):
         self.llvm_path = path
+        return self
+
+    def with_missing_target_path(self):
+        exception = clang.cindex.TranslationUnitLoadError()
+        self.index.parse.side_effect = exception
         return self
 
     def without_errors(self):

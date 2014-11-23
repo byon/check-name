@@ -37,6 +37,11 @@ def an_empty_source_file(context):
     context.path = source_file.create('')
 
 
+@given('source file does not exist')
+def source_file_does_not_exist(context):
+    context.path = 'this/really/should/not/exist.cpp'
+
+
 @given('source with namespace "{name}"')
 def source_with_namespace(context, name):
     context.path = source_file.create('namespace ' + name + '{}')
@@ -50,6 +55,16 @@ def analysis_is_made(context):
 @then('analysis should succeed')
 def analysis_should_succeed(context):
     analysis.check_for_success(context.result)
+
+
+@then(u'analysis should fail')
+def analysis_should_fail(context):
+    analysis.check_for_failure(context.result)
+
+
+@then(u'analysis error cause should be missing source file')
+def analysis_error_cause_should_be_missing_source_file(context):
+    match_('Error parsing translation unit', context.result.stderr)
 
 
 @then('there should be no output')

@@ -35,14 +35,14 @@ def test_output_should_notice_if_there_are_no_errors(stderr):
 @patch('sys.stderr', new_callable=StringIO)
 def test_output_should_notice_if_there_are_errors(stderr):
     output = Output()
-    output.error(_Location(), 'type', 'symbol', 'reason')
+    output.rule_violation(_Location(), 'type', 'symbol', 'reason')
     assert output.has_errors is True
 
 
 @patch('sys.stderr', new_callable=StringIO)
 def test_format_of_error_output(stderr):
     output = Output()
-    output.error(_Location(), 'type', 'symbol', 'reason')
+    output.rule_violation(_Location(), 'type', 'symbol', 'reason')
     assert stderr.getvalue() == 'file (12, 34): type "symbol" reason\n'
 
 

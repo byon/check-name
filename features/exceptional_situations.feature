@@ -8,3 +8,9 @@ Feature: Exceptional situations
     When analysis is made
     Then analysis should succeed
     And there should be no output
+
+  Scenario: Path to missing source file is an error
+    Given source file does not exist
+    When analysis is made
+    Then analysis should fail
+    And analysis error cause should be missing source file

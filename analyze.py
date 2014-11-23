@@ -33,5 +33,5 @@ def analyze_nodes(output, translation_unit):
 
 
 def is_camel_case(output, namespace):
-    output.error(namespace.location, 'namespace', namespace.spelling,
-                 'is not in CamelCase')
+    output.rule_violation(namespace.location, 'namespace', namespace.spelling,
+                          'is not in CamelCase')

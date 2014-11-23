@@ -32,9 +32,12 @@ class Output:
     def __init__(self):
         self.error_count = 0
 
-    def error(self, location, type, symbol, reason):
+    def rule_violation(self, location, type, symbol, reason):
         output = '{}: {} "{}" {}'.format(location_to_string(location),
                                          type, symbol, reason)
+        self.error(output)
+
+    def error(self, output):
         print(output, file=sys.stderr)
         self.error_count += 1
 
