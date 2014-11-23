@@ -9,3 +9,10 @@ Feature: Analyzing namespace names
     Given source with namespace "aBc"
     When analysis is made
     Then analysis reports "namespace" "aBc" as "CamelCase" rule violation
+
+  Scenario: Sequential namespaces not in CamelCase are reported
+    Given source with namespace "ABC"
+    And source with namespace "abc"
+    When analysis is made
+    Then analysis reports "namespace" "ABC" as "CamelCase" rule violation
+    Then analysis reports "namespace" "abc" as "CamelCase" rule violation

@@ -41,6 +41,13 @@ def test_analyzing_one_namespace(node, analyzer):
     assert analyzer.call_count == 1
 
 
+def test_analyzing_sequential_namespaces(node, analyzer):
+    node.with_namespace('Foo')
+    node.with_namespace('Bar')
+    analyze.analyze_nodes(MagicMock(), node)
+    assert analyzer.call_count == 2
+
+
 def test_camel_case_analysis_succeeds(output, node):
     with patch('analyze.is_camel_case') as analyzer:
         analyzer.return_value = True

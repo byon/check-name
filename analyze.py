@@ -26,12 +26,8 @@ import re
 
 
 def analyze_nodes(output, translation_unit):
-    first = None
-    try:
-        first = next(translation_unit.cursor.get_children())
-    except StopIteration:
-        return
-    analyse_camel_case(output, first)
+    for node in translation_unit.cursor.get_children():
+        analyse_camel_case(output, node)
 
 
 def analyse_camel_case(output, namespace):

@@ -34,7 +34,7 @@ LLVM_PATH = os.environ['LLVM_PATH']
 
 @given('an empty source file')
 def an_empty_source_file(context):
-    context.path = source_file.create('')
+    context.path = source_file.create(_add_content(context, ''))
 
 
 @given('source file does not exist')
@@ -44,7 +44,8 @@ def source_file_does_not_exist(context):
 
 @given('source with namespace "{name}"')
 def source_with_namespace(context, name):
-    context.path = source_file.create('namespace ' + name + '{}')
+    content = 'namespace ' + name + '{}\n'
+    context.path = source_file.create(_add_content(context, content))
 
 
 @when('analysis is made')
@@ -93,3 +94,10 @@ def _build_command(context):
 
 def _mandatory_options():
     return ['--llvm_path', LLVM_PATH]
+
+
+def _add_content(context, content):
+    if context.content is None:
+        context.content = ''
+    context.content += content
+    return context.content
