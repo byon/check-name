@@ -26,11 +26,10 @@ import analysis
 import source_file
 from test import eq_, match_
 
-import os.path
+import os
 from behave import given, when, then
 
-LLVM_ROOT = '/home/byon/src/vendor/'
-LLVM_PATH = os.path.join(LLVM_ROOT, 'llvm/build/Release/lib')
+LLVM_PATH = os.environ['LLVM_PATH']
 
 
 @given('an empty source file')
