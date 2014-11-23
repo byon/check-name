@@ -22,6 +22,8 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import re
+
 
 def analyze_nodes(output, translation_unit):
     first = None
@@ -39,4 +41,4 @@ def analyse_camel_case(output, namespace):
 
 
 def is_camel_case(name):
-    return name[0].isupper()
+    return True if re.match('^([A-Z][a-z]+\d*)+$', name) else False
