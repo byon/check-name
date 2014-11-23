@@ -26,7 +26,11 @@ import analysis
 import source_file
 from test import eq_, match_
 
+import os.path
 from behave import given, when, then
+
+LLVM_ROOT = '/home/byon/src/vendor/'
+LLVM_PATH = os.path.join(LLVM_ROOT, 'llvm/build/Release/lib')
 
 
 @given('an empty source file')
@@ -41,7 +45,7 @@ def source_with_namespace(context, name):
 
 @when('analysis is made')
 def analysis_is_made(context):
-    context.result = analysis.run([context.path])
+    context.result = analysis.run(_build_command(context))
 
 
 @then('analysis should succeed')
@@ -62,5 +66,9 @@ def analysis_reports_rule_violation(context, type, name, cause):
            context.result.stderr)
 
 
-def create_arguments(context):
-    return ['check_name.py', context.path]
+def _build_command(context):
+    return _mandatory_options() + [context.path]
+
+
+def _mandatory_options():
+    return ['--llvm_path', LLVM_PATH]

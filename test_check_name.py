@@ -27,14 +27,20 @@ from mock import MagicMock, patch
 import pytest
 
 
+def test_analysis_will_set_llvm_path(tester):
+    tester.with_llvm_path('path')
+    tester.test()
+    tester.configuration.set_library_path.assert_called_once_with('path')
+
+
 def test_analysis_will_create_clang_index(tester):
     tester.test()
     tester.index_class.create.assert_called_once_with()
 
 
 def test_analysis_will_pass_target_file_to_clang(tester):
-    tester.test()
-    tester.index.parse.assert_called_once_with('path')
+    tester.with_target_path('target').test()
+    tester.index.parse.assert_called_once_with('target')
 
 
 def test_analysis_is_done(tester):
@@ -59,7 +65,11 @@ def tester(request):
 
 class _Tester:
     def __init__(self):
-        self.arguments = ['executable', 'path']
+        self.llvm_path = 'llvm_path'
+        self.target_path = 'target_path'
+
+        self.configuration = self._add_patch_without_autospec(
+            'clang.cindex.conf')
 
         self.index_class = self._add_patch('clang.cindex.Index')
         self.index_class.create.return_value = self.index = MagicMock()
@@ -74,6 +84,10 @@ class _Tester:
 
         self.without_errors()
 
+    def with_llvm_path(self, path):
+        self.llvm_path = path
+        return self
+
     def without_errors(self):
         self.output.has_errors = False
         return self
@@ -82,9 +96,29 @@ class _Tester:
         self.output.has_errors = True
         return self
 
+    def with_target_path(self, path):
+        self.target_path = path
+        return self
+
     def test(self):
-        return check_name.main(self.arguments)
+        return check_name.main(self._build_argument_list())
+
+    def _build_argument_list(self):
+        arguments = ['executable']
+        arguments += _option_as_list('llvm_path', self.llvm_path)
+        arguments += [self.target_path]
+        return arguments
 
     def _add_patch(self, name):
         patcher = patch(name, autospec=True)
         return patcher.start()
+
+    def _add_patch_without_autospec(self, name):
+        patcher = patch(name, autospec=False)
+        return patcher.start()
+
+
+def _option_as_list(name, value):
+    if not value:
+        return []
+    return ['--' + name, value]

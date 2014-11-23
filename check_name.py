@@ -25,19 +25,29 @@
 
 import analyze
 import report
+
+import argparse
 import sys
 import clang.cindex
 
 
 def main(arguments):
-    clang.cindex.conf.set_library_path('/home/byon/src/vendor/' +
-                                       'llvm/build/Release/lib')
+    options = parse_options_from_arguments(arguments)
+    clang.cindex.conf.set_library_path(options.llvm_path)
     index = clang.cindex.Index.create()
     output = report.Output()
-    analyze.analyze_nodes(output, index.parse(arguments[1]))
+    analyze.analyze_nodes(output, index.parse(options.target_path))
     if output.has_errors:
         return 1
     return 0
+
+
+def parse_options_from_arguments(arguments):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-l', '--llvm_path', required=True,
+                        help='path directory that contains llvm library')
+    parser.add_argument('target_path', help='path to analyzed file')
+    return parser.parse_args(arguments[1:])
 
 
 if __name__ == '__main__':
