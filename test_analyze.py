@@ -30,34 +30,64 @@ import pytest
 from mock import MagicMock, patch
 
 
-def test_analyzing_empty_translation_unit(translation_unit, analyzer):
-    analyze.analyze_nodes(MagicMock(), translation_unit)
+def test_analyzing_empty_translation_unit(node, analyzer):
+    analyze.analyze_nodes(MagicMock(), node)
     assert analyzer.call_count == 0
 
 
-def test_analyzing_one_namespace(translation_unit, analyzer):
-    translation_unit.with_namespace('Foo')
-    analyze.analyze_nodes(MagicMock(), translation_unit)
+def test_analyzing_one_namespace(node, analyzer):
+    node.with_namespace('Foo')
+    analyze.analyze_nodes(MagicMock(), node)
     assert analyzer.call_count == 1
+
+
+def test_camel_case_analysis_succeeds(output, node):
+    with patch('analyze.is_camel_case') as analyzer:
+        analyzer.return_value = True
+        analyze.analyse_camel_case(output, node)
+    assert 0 == output.rule_violation.call_count
+
+
+def test_camel_case_analysis_fails(output, node):
+    with patch('analyze.is_camel_case') as analyzer:
+        analyzer.return_value = False
+        analyze.analyse_camel_case(output, node)
+    output.rule_violation.assert_called_once_with(
+        node.location, 'namespace', node.spelling, 'is not in CamelCase')
+
+
+def test_recognizing_camel_case_with_one_part():
+    assert analyze.is_camel_case('Foo')
+
+
+def test_recognizing_camel_case_error_when_all_lowercase():
+    assert not analyze.is_camel_case('foo')
 
 
 @pytest.fixture
 def analyzer(request):
-    result = patch('analyze.is_camel_case', autospec=True)
+    result = patch('analyze.analyse_camel_case', autospec=True)
     request.addfinalizer(patch.stopall)
     return result.start()
 
 
 @pytest.fixture
-def translation_unit():
+def node():
     return _Node()
 
 
+@pytest.fixture
+def output():
+    return MagicMock()
+
+
 class _Node:
-    def __init__(self):
+    def __init__(self, name=None):
         self.children = []
         self.cursor = MagicMock()
         self._update_child_iterator()
+        self.spelling = name
+        self.location = MagicMock()
 
     def with_namespace(self, name):
         return self.with_declaration(clang.cindex.CursorKind.NAMESPACE, name)

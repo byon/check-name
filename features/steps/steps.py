@@ -73,6 +73,13 @@ def there_should_be_no_output(context):
     eq_(context.result.stdout, '')
 
 
+@then('analysis should report no rule violations')
+def analysis_should_report_no_rule_violations(context):
+    analysis.check_for_success(context.result)
+    eq_(context.result.stderr, '')
+    eq_(context.result.stdout, '')
+
+
 @then('analysis reports "{type}" "{name}" as "{cause}" rule violation')
 def analysis_reports_rule_violation(context, type, name, cause):
     analysis.check_for_failure(context.result)

@@ -29,9 +29,14 @@ def analyze_nodes(output, translation_unit):
         first = next(translation_unit.cursor.get_children())
     except StopIteration:
         return
-    is_camel_case(output, first)
+    analyse_camel_case(output, first)
 
 
-def is_camel_case(output, namespace):
-    output.rule_violation(namespace.location, 'namespace', namespace.spelling,
-                          'is not in CamelCase')
+def analyse_camel_case(output, namespace):
+    if not is_camel_case(namespace.spelling):
+        output.rule_violation(namespace.location, 'namespace',
+                              namespace.spelling, 'is not in CamelCase')
+
+
+def is_camel_case(name):
+    return name[0].isupper()
