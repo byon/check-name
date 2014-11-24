@@ -1,0 +1,24 @@
+C++ naming analyzer for style used in my workplace. Just started, so don't expect this to be useful.
+
+Implemented by using python bindings to libclang. So far tested only on Linux.
+
+** Running the analyzer
+
+Requires that python bindings to libclang are in PYTHONPATH. E.g.
+#+BEGIN_EXAMPLE
+$ export PYTHONPATH=../vendor/llvm/tools/clang/bindings/python/
+#+END_EXAMPLE
+
+** Testing
+
+Unit tests use pytest, so just:
+#+BEGIN_EXAMPLE
+$ py.test
+#+END_EXAMPLE
+
+Higher level tests are implemented using behave. They require that you have defined path to the LLVM dynamic library location as LLVM_PATH environment variable. After that you can run behave.
+
+#+BEGIN_EXAMPLE
+$ export LLVM_PATH=/home/byon/src/vendor/llvm/build/Release/lib
+$ behave
+#+END_EXAMPLE
