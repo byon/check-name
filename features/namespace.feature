@@ -16,3 +16,9 @@ Feature: Analyzing namespace names
     When analysis is made
     Then analysis reports "namespace" "ABC" as "CamelCase" rule violation
     Then analysis reports "namespace" "abc" as "CamelCase" rule violation
+
+  Scenario: Nested namespaces not in CamelCase are reported
+    Given source with nested namespace "inner" inside namespace "outer"
+    When analysis is made
+    Then analysis reports "namespace" "outer" as "CamelCase" rule violation
+    And analysis reports "namespace" "inner" as "CamelCase" rule violation

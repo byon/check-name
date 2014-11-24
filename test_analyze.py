@@ -36,16 +36,20 @@ def test_analyzing_empty_translation_unit(translation_unit, analyzer):
 
 
 def test_analyzing_one_namespace(translation_unit, analyzer):
-    translation_unit.cursor.with_namespace('Foo')
+    translation_unit.cursor.new_namespace('Foo')
     analyze.analyze_translation_unit(MagicMock(), translation_unit)
     assert analyzer.call_count == 1
 
 
-def test_analyzing_sequential_namespaces(node, analyzer):
-    node.with_namespace('Foo')
-    node.with_namespace('Bar')
-    analyze.analyze_nodes(MagicMock(), node)
-    assert analyzer.call_count == 2
+def test_analyzing_sequential_namespaces(analyze_nodes_tester):
+    analyze_nodes_tester.with_namespace('Foo').with_namespace('Bar').test()
+    assert analyze_nodes_tester.analyzer.call_count == 2
+
+
+def test_analyzing_nested_namespaces(analyze_nodes_tester):
+    analyze_nodes_tester.root.new_namespace('Foo').new_namespace('Bar')
+    analyze_nodes_tester.test()
+    assert analyze_nodes_tester.analyzer.call_count == 2
 
 
 def test_camel_case_analysis_succeeds(output, node):
@@ -113,13 +117,20 @@ def analyzer(request):
 @pytest.fixture
 def translation_unit():
     result = MagicMock
-    result.cursor = _Node()
+    result.cursor = _Node('name')
     return result
 
 
 @pytest.fixture
 def node():
-    return _Node()
+    return _Node('name')
+
+
+@pytest.fixture
+def analyze_nodes_tester(request):
+    result = _NodeAnalyzeTester()
+    request.addfinalizer(patch.stopall)
+    return result
 
 
 @pytest.fixture
@@ -127,20 +138,50 @@ def output():
     return MagicMock()
 
 
+class _NodeAnalyzeTester:
+    def __init__(self):
+        self.root = _Node('root')
+        self.analyzer = self._add_patch('analyze.analyse_camel_case')
+        self.output = MagicMock()
+
+    def test(self):
+        analyze.analyze_nodes(self.output, self.root)
+
+    def with_namespace(self, name):
+        self.root.new_namespace(name)
+        return self
+
+    def _add_patch(self, name):
+        patcher = patch(name, autospec=True)
+        return patcher.start()
+
+
 class _Node:
-    def __init__(self, name=None):
+    def __init__(self, name):
         self.children = []
+        self.cursor = MagicMock()
+        self.cursor.get_children.return_value = iter(self.children)
         self.spelling = name
         self.location = MagicMock()
 
-    def with_namespace(self, name):
-        return self.with_declaration(clang.cindex.CursorKind.NAMESPACE, name)
+    @staticmethod
+    def create_namespace(name):
+        return _Node.create_declaration(
+            clang.cindex.CursorKind.NAMESPACE, name)
 
-    def with_declaration(self, cursor_kind, name):
-        declaration = _Node()
+    @staticmethod
+    def create_declaration(cursor_kind, name):
+        declaration = _Node(name)
         declaration.kind = cursor_kind
-        self.children.append(declaration)
-        return self
+        return declaration
 
     def get_children(self):
         return iter(self.children)
+
+    def new_namespace(self, name):
+        return self._add_child(_Node.create_namespace, name)
+
+    def _add_child(self, creator, *args):
+        child = creator(args)
+        self.children.append(child)
+        return child

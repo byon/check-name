@@ -48,6 +48,12 @@ def source_with_namespace(context, name):
     context.path = source_file.create(_add_content(context, content))
 
 
+@given('source with nested namespace "{inner}" inside namespace "{outer}"')
+def source_with_nested_namespaces(context, inner, outer):
+    content = 'namespace ' + outer + '{ namespace ' + inner + '{}}\n'
+    context.path = source_file.create(_add_content(context, content))
+
+
 @when('analysis is made')
 def analysis_is_made(context):
     context.result = analysis.run(_build_command(context))

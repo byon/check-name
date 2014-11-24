@@ -29,9 +29,11 @@ def analyze_translation_unit(output, translation_unit):
     analyze_nodes(output, translation_unit.cursor)
 
 
-def analyze_nodes(output, node):
+def analyze_nodes(output, node, root=True):
+    if not root:
+        analyse_camel_case(output, node)
     for child in node.get_children():
-        analyse_camel_case(output, child)
+        analyze_nodes(output, child, False)
 
 
 def analyse_camel_case(output, namespace):
