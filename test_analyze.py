@@ -30,14 +30,14 @@ import pytest
 from mock import MagicMock, patch
 
 
-def test_analyzing_empty_translation_unit(node, analyzer):
-    analyze.analyze_nodes(MagicMock(), node)
+def test_analyzing_empty_translation_unit(translation_unit, analyzer):
+    analyze.analyze_translation_unit(MagicMock(), translation_unit)
     assert analyzer.call_count == 0
 
 
-def test_analyzing_one_namespace(node, analyzer):
-    node.with_namespace('Foo')
-    analyze.analyze_nodes(MagicMock(), node)
+def test_analyzing_one_namespace(translation_unit, analyzer):
+    translation_unit.cursor.with_namespace('Foo')
+    analyze.analyze_translation_unit(MagicMock(), translation_unit)
     assert analyzer.call_count == 1
 
 
@@ -111,6 +111,13 @@ def analyzer(request):
 
 
 @pytest.fixture
+def translation_unit():
+    result = MagicMock
+    result.cursor = _Node()
+    return result
+
+
+@pytest.fixture
 def node():
     return _Node()
 
@@ -123,8 +130,6 @@ def output():
 class _Node:
     def __init__(self, name=None):
         self.children = []
-        self.cursor = MagicMock()
-        self._update_child_iterator()
         self.spelling = name
         self.location = MagicMock()
 
@@ -137,5 +142,5 @@ class _Node:
         self.children.append(declaration)
         return self
 
-    def _update_child_iterator(self):
-        self.cursor.get_children.return_value = iter(self.children)
+    def get_children(self):
+        return iter(self.children)

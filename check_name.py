@@ -43,7 +43,7 @@ def main(arguments):
 def do_analyzis(options, output):
     clang.cindex.conf.set_library_path(options.llvm_path)
     index = clang.cindex.Index.create()
-    analyze.analyze_nodes(output, index.parse(options.target_path))
+    analyze.analyze_translation_unit(output, index.parse(options.target_path))
     if output.has_errors:
         return 1
     return 0

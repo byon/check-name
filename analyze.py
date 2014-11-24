@@ -25,9 +25,13 @@
 import re
 
 
-def analyze_nodes(output, translation_unit):
-    for node in translation_unit.cursor.get_children():
-        analyse_camel_case(output, node)
+def analyze_translation_unit(output, translation_unit):
+    analyze_nodes(output, translation_unit.cursor)
+
+
+def analyze_nodes(output, node):
+    for child in node.get_children():
+        analyse_camel_case(output, child)
 
 
 def analyse_camel_case(output, namespace):
