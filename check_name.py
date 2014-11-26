@@ -43,8 +43,12 @@ def main(arguments):
 def do_analyzis(all_options, output):
     options, clang_options = all_options
     clang.cindex.conf.set_library_path(options.llvm_path)
+
     index = clang.cindex.Index.create()
     translation_unit = index.parse(options.target, clang_options)
+
+    report_diagnostics(output, translation_unit.diagnostics)
+
     analyze.analyze_translation_unit(output, translation_unit)
     if output.has_errors:
         return 1
@@ -68,6 +72,11 @@ def create_argument_parser():
               'Please check clang documentation for more information.')
     return argparse.ArgumentParser(description=description,
                                    epilog=epilog)
+
+
+def report_diagnostics(output, diagnostics):
+    for d in diagnostics:
+        output.diagnostic(d.severity, d.location, d.spelling)
 
 
 if __name__ == '__main__':

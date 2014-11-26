@@ -21,3 +21,15 @@ Feature: Exceptional situations
     And preprocessor definitions contain "FOO"
     When analysis is made
     Then analysis should succeed
+
+  Scenario: Syntax warnings are reported
+    Given source file with a syntax warning
+    When analysis is made
+    Then analysis should succeed
+    And warning cause should be reported
+
+  Scenario: Syntax errors are reported
+    Given source file with a syntax error
+    When analysis is made
+    Then analysis should fail
+    And error cause should be reported

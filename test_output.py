@@ -43,7 +43,35 @@ def test_output_should_notice_if_there_are_errors(stderr):
 def test_format_of_error_output(stderr):
     output = Output()
     output.rule_violation(_Location(), 'type', 'symbol', 'reason')
-    assert stderr.getvalue() == 'file (12, 34): type "symbol" reason\n'
+    assert stderr.getvalue() == 'file (12, 34): error: type "symbol" reason\n'
+
+
+@patch('sys.stderr', new_callable=StringIO)
+def test_format_of_diagnostic_warning(stderr):
+    output = Output()
+    output.diagnostic(2, _Location(), 'reason')
+    assert stderr.getvalue() == 'file (12, 34): warning: reason\n'
+
+
+@patch('sys.stderr', new_callable=StringIO)
+def test_format_of_diagnostic_error(stderr):
+    output = Output()
+    output.diagnostic(3, _Location(), 'reason')
+    assert stderr.getvalue() == 'file (12, 34): error: reason\n'
+
+
+@patch('sys.stderr', new_callable=StringIO)
+def test_diagnostic_warning_is_not_an_error(stderr):
+    output = Output()
+    output.diagnostic(2, _Location(), 'reason')
+    assert output.has_errors is False
+
+
+@patch('sys.stderr', new_callable=StringIO)
+def test_diagnostic_error_is_an_error(stderr):
+    output = Output()
+    output.diagnostic(3, _Location(), 'reason')
+    assert output.has_errors is True
 
 
 class _Location():

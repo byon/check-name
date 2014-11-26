@@ -25,6 +25,7 @@
 
 from __future__ import print_function
 import sys
+import clang
 
 
 class Output:
@@ -33,20 +34,42 @@ class Output:
         self.error_count = 0
 
     def rule_violation(self, location, type, symbol, reason):
-        output = '{}: {} "{}" {}'.format(location_to_string(location),
-                                         type, symbol, reason)
+        output = '{} {} "{}" {}'.format(_header(location, 'error'), type,
+                                        symbol, reason)
         self.error(output)
 
+    def diagnostic(self, severity, location, reason):
+        self._output(_header(location, _severity_to_string(severity)) + ' ' +
+                     reason)
+        if severity > clang.cindex.Diagnostic.Warning:
+            self.error_count += 1
+
     def error(self, output):
-        print(output, file=sys.stderr)
+        self._output(output)
         self.error_count += 1
+
+    def _output(self, output):
+        print(output, file=sys.stderr)
 
     @property
     def has_errors(self):
         return self.error_count > 0
 
 
-def location_to_string(location):
+def _header(location, severity):
+    return '{}: {}:'.format(_location_to_string(location), severity)
+
+
+def _location_to_string(location):
     return (str(location.file) + ' (' +
             str(location.line) + ', ' +
             str(location.column) + ')')
+
+
+def _severity_to_string(severity):
+    to_string = {0: 'ignored',
+                 1: 'note',
+                 2: 'warning',
+                 3: 'error',
+                 4: 'fatal'}
+    return to_string[severity]

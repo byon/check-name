@@ -52,6 +52,18 @@ def contains_type(context, type, name):
     context.ast.open_child.add_child(_identify_type(type)(name))
 
 
+@given('source file with a syntax warning')
+def source_with_a_syntax_warning(context):
+    context.expected_warning = "warning from test"
+    context.ast.add_child(ast.Warning(context.expected_warning))
+
+
+@given('source file with a syntax error')
+def source_with_a_syntax_error(context):
+    context.expected_error = "error from test"
+    context.ast.add_child(ast.Error(context.expected_error))
+
+
 @given('preprocessor definitions contain "{definition}"')
 def preprocessor_definitions_contain(context, definition):
     context.additional_options += ['-D' + definition]
@@ -78,6 +90,16 @@ def analysis_should_fail(context):
 @then('analysis error cause should be missing source file')
 def analysis_error_cause_should_be_missing_source_file(context):
     match_('Error parsing translation unit', context.result.stderr)
+
+
+@then('warning cause should be reported')
+def warning_cause_should_be_reported(context):
+    match_(context.expected_warning, context.result.stderr)
+
+
+@then('error cause should be reported')
+def error_cause_should_be_reported(context):
+    match_(context.expected_error, context.result.stderr)
 
 
 @then('there should be no output')

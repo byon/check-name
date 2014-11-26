@@ -78,6 +78,16 @@ class PreprocessorCondition(_Node):
                        '#endif\n')
 
 
+class Warning(_Node):
+    def __init__(self, description):
+        _Node.__init__(self, description, '#warning ' + description, '')
+
+
+class Error(_Node):
+    def __init__(self, description):
+        _Node.__init__(self, description, '#error ' + description, '')
+
+
 def _choose_path(path):
     if not path:
         return _default_path()

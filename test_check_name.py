@@ -51,7 +51,7 @@ def test_analysis_will_pass_unknown_options_to_clang(tester):
 
 def test_analysis_is_done(tester):
     tester.test()
-    tester.analyzer.assert_called_once_with(tester.output, 'TranslationUnit')
+    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result)
 
 
 def test_missing_source_file_is_an_error(tester):
@@ -72,6 +72,16 @@ def test_success_noticed(tester):
     assert 0 == tester.without_errors().test()
 
 
+def test_one_diagnostic_is_reported(tester):
+    tester.with_diagnostic('reason').test()
+    tester.output.diagnostic.assert_called_once_with(2, 'location', 'reason')
+
+
+def test_multiple_diagnostics_are_reported(tester):
+    tester.with_diagnostic('reason').with_diagnostic('reason2').test()
+    assert tester.output.diagnostic.call_count == 2
+
+
 @pytest.fixture
 def tester(request):
     result = _Tester()
@@ -90,7 +100,8 @@ class _Tester:
 
         self.index_class = self._add_patch('clang.cindex.Index')
         self.index_class.create.return_value = self.index = MagicMock()
-        self.index.parse.return_value = 'TranslationUnit'
+        self.parse_result = MagicMock(diagnostics=[])
+        self.index.parse.return_value = self.parse_result
         self.index_class.return_value = self.index
 
         self.analyzer = self._add_patch('analyze.analyze_translation_unit')
@@ -120,6 +131,12 @@ class _Tester:
 
     def with_errors(self):
         self.output.has_errors = True
+        return self
+
+    def with_diagnostic(self, reason):
+        diagnostic = MagicMock(location='location', severity=2,
+                               spelling=reason)
+        self.parse_result.diagnostics += [diagnostic]
         return self
 
     def with_target_path(self, path):
