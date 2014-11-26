@@ -64,12 +64,12 @@ def analysis_should_succeed(context):
     analysis.check_for_success(context.result)
 
 
-@then(u'analysis should fail')
+@then('analysis should fail')
 def analysis_should_fail(context):
     analysis.check_for_failure(context.result)
 
 
-@then(u'analysis error cause should be missing source file')
+@then('analysis error cause should be missing source file')
 def analysis_error_cause_should_be_missing_source_file(context):
     match_('Error parsing translation unit', context.result.stderr)
 
