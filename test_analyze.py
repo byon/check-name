@@ -41,6 +41,17 @@ def test_analyzing_one_namespace(translation_unit, analyzer):
     assert analyzer.call_count == 1
 
 
+def test_only_declarations_are_analyzed(analyze_nodes_tester):
+    analyze_nodes_tester.with_non_declaration().test()
+    assert analyze_nodes_tester.analyzer.call_count == 0
+
+
+def test_children_are_analyzed_for_non_declarations(analyze_nodes_tester):
+    analyze_nodes_tester.root.new_non_declaration().new_namespace('a')
+    analyze_nodes_tester.test()
+    assert analyze_nodes_tester.analyzer.call_count == 1
+
+
 def test_analyzing_sequential_namespaces(analyze_nodes_tester):
     analyze_nodes_tester.with_namespace('Foo').with_namespace('Bar').test()
     assert analyze_nodes_tester.analyzer.call_count == 2
@@ -151,18 +162,25 @@ class _NodeAnalyzeTester:
         self.root.new_namespace(name)
         return self
 
+    def with_non_declaration(self):
+        self.root.new_non_declaration()
+        return self
+
     def _add_patch(self, name):
         patcher = patch(name, autospec=True)
         return patcher.start()
 
 
 class _Node:
-    def __init__(self, name):
+    def __init__(self, name, kind=None):
         self.children = []
         self.cursor = MagicMock()
         self.cursor.get_children.return_value = iter(self.children)
         self.spelling = name
         self.location = MagicMock()
+        self.kind = MagicMock()
+        self.kind.__eq__.side_effect = lambda k: k == kind
+        self.kind.is_declaration.return_value = False
 
     @staticmethod
     def create_namespace(name):
@@ -170,9 +188,9 @@ class _Node:
             clang.cindex.CursorKind.NAMESPACE, name)
 
     @staticmethod
-    def create_declaration(cursor_kind, name):
-        declaration = _Node(name)
-        declaration.kind = cursor_kind
+    def create_declaration(kind, name):
+        declaration = _Node(name, kind)
+        declaration.kind.is_declaration.return_value = True
         return declaration
 
     def get_children(self):
@@ -180,6 +198,11 @@ class _Node:
 
     def new_namespace(self, name):
         return self._add_child(_Node.create_namespace, name)
+
+    def new_non_declaration(self):
+        non_declaration = _Node('irrelevant',
+                                clang.cindex.CursorKind.TRANSLATION_UNIT)
+        return self._add_child(lambda _: non_declaration)
 
     def _add_child(self, creator, *args):
         child = creator(args)

@@ -30,7 +30,7 @@ def analyze_translation_unit(output, translation_unit):
 
 
 def analyze_nodes(output, node, root=True):
-    if not root:
+    if not root and node.kind.is_declaration():
         analyse_camel_case(output, node)
     for child in node.get_children():
         analyze_nodes(output, child, False)
