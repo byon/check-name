@@ -14,3 +14,9 @@ Feature: Exceptional situations
     When analysis is made
     Then analysis should fail
     And analysis error cause should be missing source file
+
+  Scenario: Options can be passed to clang
+    Given source file with namespace "f" inside preprocessor condition "FOO"
+    And preprocessor definitions contain "FOO"
+    When analysis is made
+    Then analysis should succeed

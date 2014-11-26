@@ -54,9 +54,25 @@ def source_with_nested_namespaces(context, inner, outer):
     context.path = source_file.create(_add_content(context, content))
 
 
+@given('source file with namespace "{namespace}" inside preprocessor ' +
+       'condition "{definition}"')
+def source_with_namespace_inside_preprocessor_condition(context, namespace,
+                                                        definition):
+    content = ('#ifndef ' + definition + '\n' +
+               'namespace ' + namespace + ' {}\n' +
+               '#endif\n')
+    context.path = source_file.create(_add_content(context, content))
+
+
+@given('preprocessor definitions contain "{definition}"')
+def preprocessor_definitions_contain(context, definition):
+    context.additional_options += ['-D' + definition]
+
+
 @when('analysis is made')
 def analysis_is_made(context):
-    context.result = analysis.run(_build_command(context))
+    context.result = analysis.run(_build_command(context,
+                                                 context.additional_options))
 
 
 @then('analysis should succeed')
@@ -94,12 +110,13 @@ def analysis_reports_rule_violation(context, type, name, cause):
            context.result.stderr)
 
 
-def _build_command(context):
-    return _mandatory_options() + [context.path]
+def _build_command(context, additional_arguments):
+    result = _mandatory_options(context.path) + additional_arguments
+    return result
 
 
-def _mandatory_options():
-    return ['--llvm_path', LLVM_PATH]
+def _mandatory_options(path):
+    return ['--llvm_path', LLVM_PATH, '--target', path]
 
 
 def _add_content(context, content):

@@ -33,6 +33,7 @@ def before_feature(context, feature):
     cleanup_test_directory()
     os.mkdir(TEST_EXECUTION_DIRECTORY)
     context.content = None
+    context.additional_options = []
 
 
 def after_feature(context, feature):

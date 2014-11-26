@@ -41,7 +41,12 @@ def test_analysis_will_create_clang_index(tester):
 
 def test_analysis_will_pass_target_file_to_clang(tester):
     tester.with_target_path('target').test()
-    tester.index.parse.assert_called_once_with('target')
+    tester.index.parse.assert_called_once_with('target', [])
+
+
+def test_analysis_will_pass_unknown_options_to_clang(tester):
+    tester.with_target_path('t').with_additional_option('option', '1').test()
+    tester.index.parse.assert_called_once_with('t', ['--option', '1'])
 
 
 def test_analysis_is_done(tester):
@@ -78,6 +83,7 @@ class _Tester:
     def __init__(self):
         self.llvm_path = 'llvm_path'
         self.target_path = 'target_path'
+        self.extra_arguments = []
 
         self.configuration = self._add_patch_without_autospec(
             'clang.cindex.conf')
@@ -97,6 +103,10 @@ class _Tester:
 
     def with_llvm_path(self, path):
         self.llvm_path = path
+        return self
+
+    def with_additional_option(self, name, value):
+        self.extra_arguments += _option_as_list(name, value)
         return self
 
     def with_missing_target_path(self):
@@ -122,7 +132,8 @@ class _Tester:
     def _build_argument_list(self):
         arguments = ['executable']
         arguments += _option_as_list('llvm_path', self.llvm_path)
-        arguments += [self.target_path]
+        arguments += _option_as_list('target', self.target_path)
+        arguments += self.extra_arguments
         return arguments
 
     def _add_patch(self, name):

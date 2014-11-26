@@ -40,10 +40,12 @@ def main(arguments):
         return 1
 
 
-def do_analyzis(options, output):
+def do_analyzis(all_options, output):
+    options, clang_options = all_options
     clang.cindex.conf.set_library_path(options.llvm_path)
     index = clang.cindex.Index.create()
-    analyze.analyze_translation_unit(output, index.parse(options.target_path))
+    translation_unit = index.parse(options.target, clang_options)
+    analyze.analyze_translation_unit(output, translation_unit)
     if output.has_errors:
         return 1
     return 0
@@ -53,8 +55,9 @@ def parse_options_from_arguments(arguments):
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--llvm_path', required=True,
                         help='path directory that contains llvm library')
-    parser.add_argument('target_path', help='path to analyzed file')
-    return parser.parse_args(arguments[1:])
+    parser.add_argument('-t', '--target', required=True,
+                        help='path to file to be analyzed')
+    return parser.parse_known_args(arguments[1:])
 
 
 if __name__ == '__main__':
