@@ -29,14 +29,14 @@ import shutil
 TEST_EXECUTION_DIRECTORY = 'test_execution'
 
 
-def before_feature(context, feature):
+def before_scenario(context, scenario):
     cleanup_test_directory()
     os.mkdir(TEST_EXECUTION_DIRECTORY)
     context.content = None
     context.additional_options = []
 
 
-def after_feature(context, feature):
+def after_scenario(context, scenario):
     cleanup_test_directory()
 
 
