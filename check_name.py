@@ -52,12 +52,22 @@ def do_analyzis(all_options, output):
 
 
 def parse_options_from_arguments(arguments):
-    parser = argparse.ArgumentParser()
+    parser = create_argument_parser()
     parser.add_argument('-l', '--llvm_path', required=True,
                         help='path directory that contains llvm library')
     parser.add_argument('-t', '--target', required=True,
                         help='path to file to be analyzed')
     return parser.parse_known_args(arguments[1:])
+
+
+def create_argument_parser():
+    description = 'C++ naming style checker (for hard-coded style)'
+    epilog = ('Also any unknown options and arguments will be passed to ' +
+              'libclang. The purpose is to allow passing of compiler ' +
+              'options transparently.' +
+              'Please check clang documentation for more information.')
+    return argparse.ArgumentParser(description=description,
+                                   epilog=epilog)
 
 
 if __name__ == '__main__':
