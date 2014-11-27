@@ -18,7 +18,6 @@ Feature: Exceptional situations
   Scenario: Options can be passed to clang
     Given source with preprocessor condition "FOO"
     And nested namespace "violation"
-    And preprocessor definitions contain "FOO"
     When analysis is made
     Then analysis should succeed
 

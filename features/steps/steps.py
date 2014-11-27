@@ -44,7 +44,7 @@ def source_file_does_not_exist(context):
 
 @given('source with {type} "{name}"')
 def source_with_type(context, type, name):
-    context.ast.add_child(ast.Namespace(name))
+    context.ast.add_child(_identify_type(type)(name))
 
 
 @given('nested {type} "{name}"')
