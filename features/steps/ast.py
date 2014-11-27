@@ -26,15 +26,64 @@ from environment import TEST_EXECUTION_DIRECTORY
 import os.path
 
 
-def create(contents, path=None):
-    if not path:
-        path = default_path()
-    with open(path, 'w') as source_file:
-        source_file.write(contents)
+class _Node:
+    def __init__(self, id, start, end):
+        self.id = id
+        self.start = start
+        self.end = end
+        self.children = []
+        self._open_child = None
 
+    def add_child(self, child):
+        self.children.append(child)
+        self._open_child = child
+
+    def generate(self):
+        result = self.start
+        for child in self.children:
+            result += child.generate()
+        result += self.end
+        return result
+
+    @property
+    def has_open_child(self):
+        return self._open_child is not None
+
+    @property
+    def open_child(self):
+        assert self._open_child, '"' + self.id + '" does not have open child'
+        if self._open_child.has_open_child:
+            return self._open_child.open_child
+        return self._open_child
+
+
+class TranslationUnit(_Node):
+    def __init__(self, path=None):
+        self.path = _choose_path(path)
+        _Node.__init__(self, path, '', '')
+
+    def create_file(self):
+        with open(self.path, 'w') as file:
+            file.write(self.generate())
+
+
+class Namespace(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'namespace ' + name + '{\n', '}\n')
+
+
+class PreprocessorCondition(_Node):
+    def __init__(self, condition):
+        _Node.__init__(self, condition, '#ifdef ' + condition + '\n',
+                       '#endif\n')
+
+
+def _choose_path(path):
+    if not path:
+        return _default_path()
     return path
 
 
-def default_path():
+def _default_path():
     assert os.path.exists(TEST_EXECUTION_DIRECTORY)
     return os.path.join(TEST_EXECUTION_DIRECTORY, 'source.cpp')

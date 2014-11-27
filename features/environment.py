@@ -23,6 +23,8 @@
 # DEALINGS IN THE SOFTWARE.
 
 
+import steps.ast
+
 import os
 import shutil
 
@@ -34,6 +36,8 @@ def before_scenario(context, scenario):
     os.mkdir(TEST_EXECUTION_DIRECTORY)
     context.content = None
     context.additional_options = []
+    context.ast = steps.ast.TranslationUnit()
+    context.skip_file_creation = False
 
 
 def after_scenario(context, scenario):

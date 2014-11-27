@@ -23,7 +23,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 import analysis
-import source_file
+import ast
 from test import eq_, match_
 
 import os
@@ -34,34 +34,22 @@ LLVM_PATH = os.environ['LLVM_PATH']
 
 @given('an empty source file')
 def an_empty_source_file(context):
-    context.path = source_file.create(_add_content(context, ''))
+    context.ast.create_file()
 
 
 @given('source file does not exist')
 def source_file_does_not_exist(context):
-    context.path = 'this/really/should/not/exist.cpp'
+    context.skip_file_creation = True
 
 
-@given('source with namespace "{name}"')
-def source_with_namespace(context, name):
-    content = 'namespace ' + name + '{}\n'
-    context.path = source_file.create(_add_content(context, content))
+@given('source with {type} "{name}"')
+def source_with_type(context, type, name):
+    context.ast.add_child(ast.Namespace(name))
 
 
-@given('source with nested namespace "{inner}" inside namespace "{outer}"')
-def source_with_nested_namespaces(context, inner, outer):
-    content = 'namespace ' + outer + '{ namespace ' + inner + '{}}\n'
-    context.path = source_file.create(_add_content(context, content))
-
-
-@given('source file with namespace "{namespace}" inside preprocessor ' +
-       'condition "{definition}"')
-def source_with_namespace_inside_preprocessor_condition(context, namespace,
-                                                        definition):
-    content = ('#ifndef ' + definition + '\n' +
-               'namespace ' + namespace + ' {}\n' +
-               '#endif\n')
-    context.path = source_file.create(_add_content(context, content))
+@given('nested {type} "{name}"')
+def contains_type(context, type, name):
+    context.ast.open_child.add_child(_identify_type(type)(name))
 
 
 @given('preprocessor definitions contain "{definition}"')
@@ -71,6 +59,8 @@ def preprocessor_definitions_contain(context, definition):
 
 @when('analysis is made')
 def analysis_is_made(context):
+    if not context.skip_file_creation:
+        context.ast.create_file()
     context.result = analysis.run(_build_command(context,
                                                  context.additional_options))
 
@@ -111,16 +101,14 @@ def analysis_reports_rule_violation(context, type, name, cause):
 
 
 def _build_command(context, additional_arguments):
-    result = _mandatory_options(context.path) + additional_arguments
-    return result
+    return _mandatory_options(context.ast.path) + additional_arguments
 
 
 def _mandatory_options(path):
     return ['--llvm_path', LLVM_PATH, '--target', path]
 
 
-def _add_content(context, content):
-    if context.content is None:
-        context.content = ''
-    context.content += content
-    return context.content
+def _identify_type(name):
+    type_map = {'namespace': ast.Namespace,
+                'preprocessor_condition': ast.PreprocessorCondition}
+    return type_map[name.replace(' ', '_').lower()]
