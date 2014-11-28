@@ -22,29 +22,24 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import filter
-import re
+import os.path
 
 
-def analyze_translation_unit(output, translation_unit, filter_options):
-    analyze_nodes(output, translation_unit.cursor, filter_options)
+def should_filter(options, path):
+    include_directories = options[0]
+    if not include_directories:
+        return False
+    for directory in include_directories:
+        if _is_in_directory(path, directory):
+            return False
+    return True
 
 
-def analyze_nodes(output, node, filter_options, root=True):
-    if not root:
-        if filter.should_filter(filter_options, node.location.file.name):
-            return
-        if node.kind.is_declaration():
-            analyse_camel_case(output, node)
-    for child in node.get_children():
-        analyze_nodes(output, child, filter_options, False)
+def _is_in_directory(path, directory):
+    path_to_check = _normalized_path(path)
+    directory_to_check = _normalized_path(directory)
+    return path_to_check.startswith(directory_to_check)
 
 
-def analyse_camel_case(output, namespace):
-    if not is_camel_case(namespace.spelling):
-        output.rule_violation(namespace.location, 'namespace',
-                              namespace.spelling, 'is not in CamelCase')
-
-
-def is_camel_case(name):
-    return True if re.match('^([A-Z][a-z]+\d*)+$', name) else False
+def _normalized_path(path):
+    return os.path.abspath(path.replace('\\', '/'))

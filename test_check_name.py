@@ -51,7 +51,20 @@ def test_analysis_will_pass_unknown_options_to_clang(tester):
 
 def test_analysis_is_done(tester):
     tester.test()
-    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result)
+    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+                                            ([],))
+
+
+def test_passing_include_directory_to_analysis(tester):
+    tester.with_include_directory('a').test()
+    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+                                            (['a']))
+
+
+def test_passing_multiple_include_directories_to_analysis(tester):
+    tester.with_include_directory('a').with_include_directory('b').test()
+    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+                                            (['a', 'b']))
 
 
 def test_missing_source_file_is_an_error(tester):
@@ -115,6 +128,9 @@ class _Tester:
     def with_llvm_path(self, path):
         self.llvm_path = path
         return self
+
+    def with_include_directory(self, directory):
+        return self.with_additional_option('include', directory)
 
     def with_additional_option(self, name, value):
         self.extra_arguments += _option_as_list(name, value)

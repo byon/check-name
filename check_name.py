@@ -49,7 +49,8 @@ def do_analyzis(all_options, output):
 
     report_diagnostics(output, translation_unit.diagnostics)
 
-    analyze.analyze_translation_unit(output, translation_unit)
+    analyze.analyze_translation_unit(output, translation_unit,
+                                     filtering_options(options))
     if output.has_errors:
         return 1
     return 0
@@ -61,6 +62,8 @@ def parse_options_from_arguments(arguments):
                         help='path directory that contains llvm library')
     parser.add_argument('-t', '--target', required=True,
                         help='path to file to be analyzed')
+    parser.add_argument('-i', '--include', action='append',
+                        help='directory to include in analysis')
     return parser.parse_known_args(arguments[1:])
 
 
@@ -77,6 +80,12 @@ def create_argument_parser():
 def report_diagnostics(output, diagnostics):
     for d in diagnostics:
         output.diagnostic(d.severity, d.location, d.spelling)
+
+
+def filtering_options(options):
+    if not options.include:
+        return ([],)
+    return (options.include)
 
 
 if __name__ == '__main__':

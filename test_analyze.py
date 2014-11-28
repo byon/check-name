@@ -31,14 +31,15 @@ from mock import MagicMock, patch
 
 
 def test_analyzing_empty_translation_unit(translation_unit, analyzer):
-    analyze.analyze_translation_unit(MagicMock(), translation_unit)
+    analyze.analyze_translation_unit(MagicMock(), translation_unit, ([],))
     assert analyzer.call_count == 0
 
 
 def test_analyzing_one_namespace(translation_unit, analyzer):
-    translation_unit.cursor.new_namespace('Foo')
-    analyze.analyze_translation_unit(MagicMock(), translation_unit)
-    assert analyzer.call_count == 1
+    namespace = translation_unit.cursor.new_namespace('Foo')
+    output = MagicMock()
+    analyze.analyze_translation_unit(output, translation_unit, ([], ))
+    analyzer.assert_called_once_with(output, namespace)
 
 
 def test_only_declarations_are_analyzed(analyze_nodes_tester):
@@ -61,6 +62,24 @@ def test_analyzing_nested_namespaces(analyze_nodes_tester):
     analyze_nodes_tester.root.new_namespace('Foo').new_namespace('Bar')
     analyze_nodes_tester.test()
     assert analyze_nodes_tester.analyzer.call_count == 2
+
+
+def test_filtering_is_done(analyze_nodes_tester):
+    node = analyze_nodes_tester.root.new_namespace('Foo')
+    analyze_nodes_tester.test()
+    analyze_nodes_tester.filter.assert_called_once_with(
+        analyze_nodes_tester.filtering_options, node.location.file.name)
+
+
+def test_filtered_nodes_are_not_analyzed(analyze_nodes_tester):
+    analyze_nodes_tester.filter.return_value = True
+    analyze_nodes_tester.with_namespace('Foo').test()
+    assert analyze_nodes_tester.analyzer.call_count == 0
+
+
+def test_root_is_not_checked_for_filtering(analyze_nodes_tester):
+    analyze_nodes_tester.test()
+    assert analyze_nodes_tester.filter.call_count == 0
 
 
 def test_camel_case_analysis_succeeds(output, node):
@@ -153,10 +172,13 @@ class _NodeAnalyzeTester:
     def __init__(self):
         self.root = _Node('root')
         self.analyzer = self._add_patch('analyze.analyse_camel_case')
+        self.filter = self._add_patch('filter.should_filter')
+        self.filter.return_value = False
         self.output = MagicMock()
+        self.filtering_options = MagicMock()
 
     def test(self):
-        analyze.analyze_nodes(self.output, self.root)
+        analyze.analyze_nodes(self.output, self.root, self.filtering_options)
 
     def with_namespace(self, name):
         self.root.new_namespace(name)
@@ -177,7 +199,7 @@ class _Node:
         self.cursor = MagicMock()
         self.cursor.get_children.return_value = iter(self.children)
         self.spelling = name
-        self.location = MagicMock()
+        self.location = MagicMock(file=MagicMock(name='File.cpp'))
         self.kind = MagicMock()
         self.kind.__eq__.side_effect = lambda k: k == kind
         self.kind.is_declaration.return_value = False

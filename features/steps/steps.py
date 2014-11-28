@@ -64,9 +64,27 @@ def source_with_a_syntax_error(context):
     context.ast.add_child(ast.Error(context.expected_error))
 
 
+@given('source file that includes file "{path}"')
+def source_file_that_includes_file(context, path):
+    context.ast.add_child(ast.Include(path))
+
+
+@given('source file "{path}" contains {type} "{name}"')
+def source_file_contains_type(context, path, type, name):
+    file = ast.TranslationUnit(path)
+    context.included.append(file)
+    file.add_child(_identify_type(type)(name))
+    file.create_file()
+
+
 @given('preprocessor definitions contain "{definition}"')
 def preprocessor_definitions_contain(context, definition):
     context.additional_options += ['-D' + definition]
+
+
+@given('filter includes directory "{directory}"')
+def filter_includes_directory(context, directory):
+    context.additional_options += ['--include', directory]
 
 
 @when('analysis is made')

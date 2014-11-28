@@ -93,6 +93,11 @@ class Error(_Node):
         _Node.__init__(self, description, '#error ' + description, '')
 
 
+class Include(_Node):
+    def __init__(self, path):
+        _Node.__init__(self, path, '#include "' + path + '"', '')
+
+
 def _choose_path(path):
     if not path:
         return _default_path()
