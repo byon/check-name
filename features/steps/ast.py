@@ -63,8 +63,13 @@ class TranslationUnit(_Node):
         _Node.__init__(self, path, '', '')
 
     def create_file(self):
-        with open(self.path, 'w') as file:
+        _ensure_parent_exists(self.path_in_execution_directory)
+        with open(self.path_in_execution_directory, 'w') as file:
             file.write(self.generate())
+
+    @property
+    def path_in_execution_directory(self):
+        return os.path.join(TEST_EXECUTION_DIRECTORY, self.path)
 
 
 class Namespace(_Node):
@@ -94,6 +99,11 @@ def _choose_path(path):
     return path
 
 
+def _ensure_parent_exists(path):
+    parent = os.path.dirname(path)
+    if not os.path.exists(parent):
+        os.makedirs(parent)
+
+
 def _default_path():
-    assert os.path.exists(TEST_EXECUTION_DIRECTORY)
-    return os.path.join(TEST_EXECUTION_DIRECTORY, 'source.cpp')
+    return 'source.cpp'

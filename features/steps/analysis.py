@@ -23,10 +23,13 @@
 # DEALINGS IN THE SOFTWARE.
 
 
+from environment import TEST_EXECUTION_DIRECTORY
 import subprocess
 from test import eq_, not_eq_
 
-PATH_TO_ANALYZER = 'check_name.py'
+import os.path
+
+PATH_TO_ANALYZER = os.path.abspath('check_name.py')
 
 
 def run(arguments):
@@ -43,6 +46,7 @@ def check_for_failure(result):
 
 def call(arguments):
     process = subprocess.Popen(args=arguments, universal_newlines=True,
+                               cwd=TEST_EXECUTION_DIRECTORY,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     return Result(process.returncode, stdout, stderr)
