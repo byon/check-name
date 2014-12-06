@@ -73,12 +73,23 @@ def parse_options_from_arguments(arguments):
 
 def create_argument_parser():
     description = 'C++ naming style checker (for hard-coded style)'
-    epilog = ('Also any unknown options and arguments will be passed to ' +
-              'libclang. The purpose is to allow passing of compiler ' +
-              'options transparently.' +
-              'Please check clang documentation for more information.')
-    return argparse.ArgumentParser(description=description,
-                                   epilog=epilog)
+    epilog = """
+Also any unknown options and arguments will be passed to libclang. The
+purpose is to allow passing of compiler options transparently. Please check
+clang documentation for more information.
+
+The --include option allows the user to define the analysis to be restricted
+only to files within specific directories. Third party libraries often use
+different naming style, and analysing those would take time without any added
+benefit.
+
+With the --exclude option is meant for the use case when third party libraries
+are contained within the same directory structure as the code that should be
+analysed.
+"""
+    return argparse.ArgumentParser(
+        description=description, epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
 
 def report_diagnostics(output, diagnostics):
