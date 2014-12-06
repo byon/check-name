@@ -53,12 +53,12 @@ def test_children_are_analysed_for_non_declarations(analyse_nodes_tester):
     assert analyse_nodes_tester.analyser.call_count == 1
 
 
-def test_analysing_sequential_namespaces(analyse_nodes_tester):
+def test_analysing_sequential_nodes(analyse_nodes_tester):
     analyse_nodes_tester.with_namespace('Foo').with_namespace('Bar').test()
     assert analyse_nodes_tester.analyser.call_count == 2
 
 
-def test_analysing_nested_namespaces(analyse_nodes_tester):
+def test_analysing_nested_nodes(analyse_nodes_tester):
     analyse_nodes_tester.root.new_namespace('Foo').new_namespace('Bar')
     analyse_nodes_tester.test()
     assert analyse_nodes_tester.analyser.call_count == 2
@@ -82,6 +82,22 @@ def test_root_is_not_checked_for_filtering(analyse_nodes_tester):
     assert analyse_nodes_tester.filter.call_count == 0
 
 
+def test_unrecognized_nodes_are_not_analysed(analyse_node_tester):
+    analyse_node_tester.with_unrecognized_node().test()
+    assert analyse_node_tester.camel_analyser.call_count == 0
+    assert analyse_node_tester.headless_camel_analyser.call_count == 0
+
+
+def test_namespaces_are_analysed_for_camelcase(analyse_node_tester):
+    analyse_node_tester.with_namespace('foo').test()
+    assert analyse_node_tester.camel_analyser.call_count == 1
+
+
+def test_variables_are_analysed_for_headless_camelcase(analyse_node_tester):
+    analyse_node_tester.with_variable('foo').test()
+    assert analyse_node_tester.headless_camel_analyser.call_count == 1
+
+
 def test_camel_case_analysis_succeeds(output, node):
     with patch('analyse.is_camel_case') as analyser:
         analyser.return_value = True
@@ -99,7 +115,7 @@ def test_camel_case_analysis_fails(output, node):
 
 @pytest.fixture
 def analyser(request):
-    result = patch('analyse.analyse_camel_case', autospec=True)
+    result = patch('analyse.analyse_node', autospec=True)
     request.addfinalizer(patch.stopall)
     return result.start()
 
@@ -118,7 +134,14 @@ def node():
 
 @pytest.fixture
 def analyse_nodes_tester(request):
-    result = _NodeAnalyseTester()
+    result = _AnalyseNodesTester()
+    request.addfinalizer(patch.stopall)
+    return result
+
+
+@pytest.fixture
+def analyse_node_tester(request):
+    result = _AnalyseNodeTester()
     request.addfinalizer(patch.stopall)
     return result
 
@@ -128,13 +151,22 @@ def output():
     return MagicMock()
 
 
-class _NodeAnalyseTester:
+class _AnalyseTesterBase:
     def __init__(self):
+        self.output = MagicMock()
+
+    def _add_patch(self, name):
+        patcher = patch(name, autospec=True)
+        return patcher.start()
+
+
+class _AnalyseNodesTester(_AnalyseTesterBase):
+    def __init__(self):
+        _AnalyseTesterBase.__init__(self)
         self.root = _Node('root')
-        self.analyser = self._add_patch('analyse.analyse_camel_case')
+        self.analyser = self._add_patch('analyse.analyse_node')
         self.filter = self._add_patch('filter.should_filter')
         self.filter.return_value = False
-        self.output = MagicMock()
         self.filtering_options = MagicMock()
 
     def test(self):
@@ -148,9 +180,31 @@ class _NodeAnalyseTester:
         self.root.new_non_declaration()
         return self
 
-    def _add_patch(self, name):
-        patcher = patch(name, autospec=True)
-        return patcher.start()
+
+class _AnalyseNodeTester(_AnalyseTesterBase):
+    def __init__(self):
+        _AnalyseTesterBase.__init__(self)
+        self.root = _Node('node')
+        self.camel_analyser = self._add_patch('analyse.analyse_camel_case')
+        self.headless_camel_analyser = self._add_patch(
+            'analyse.analyse_headless_camel_case')
+        self.filter = self._add_patch('filter.should_filter')
+        self.filter.return_value = False
+
+    def with_namespace(self, name):
+        self.root = _Node.create_namespace(name)
+        return self
+
+    def with_variable(self, name):
+        self.root = _Node.create_variable(name)
+        return self
+
+    def with_unrecognized_node(self):
+        self.root.new_unrecognized_node()
+        return self
+
+    def test(self):
+        analyse.analyse_node(self.output, self.root)
 
 
 class _Node:
@@ -170,6 +224,11 @@ class _Node:
             clang.cindex.CursorKind.NAMESPACE, name)
 
     @staticmethod
+    def create_variable(name):
+        return _Node.create_declaration(
+            clang.cindex.CursorKind.VAR_DECL, name)
+
+    @staticmethod
     def create_declaration(kind, name):
         declaration = _Node(name, kind)
         declaration.kind.is_declaration.return_value = True
@@ -181,12 +240,23 @@ class _Node:
     def new_namespace(self, name):
         return self._add_child(_Node.create_namespace, name)
 
+    def new_variable(self, name):
+        return self._add_child(_Node.create_variable, name)
+
     def new_non_declaration(self):
         non_declaration = _Node('irrelevant',
                                 clang.cindex.CursorKind.TRANSLATION_UNIT)
         return self._add_child(lambda _: non_declaration)
 
+    def new_unrecognized_node(self):
+        type = clang.cindex.CursorKind.UNEXPOSED_DECL
+        return self._add_child(_Node.create_declaration, type, 'irrelevant')
+
+    def _new_node(self, type):
+        node = _Node('irrelevant', type)
+        return self._add_child(lambda _: node)
+
     def _add_child(self, creator, *args):
-        child = creator(args)
+        child = creator(*args) if args else creator(args)
         self.children.append(child)
         return child

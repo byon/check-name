@@ -83,6 +83,13 @@ class PreprocessorCondition(_Node):
                        '#endif\n')
 
 
+class Variable(_Node):
+    def __init__(self, name):
+        # Hard-coding the type, because it should be irrelevant for
+        # the purposes of check_name.
+        _Node.__init__(self, name, 'int ' + name, ';')
+
+
 class Warning(_Node):
     def __init__(self, description):
         _Node.__init__(self, description, '#warning ' + description, '')
