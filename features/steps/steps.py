@@ -87,6 +87,11 @@ def filter_includes_directory(context, directory):
     context.additional_options += ['--include', directory]
 
 
+@given('filter excludes directory "{directory}"')
+def filter_excludes_directory(context, directory):
+    context.additional_options += ['--exclude', directory]
+
+
 @when('analysis is made')
 def analysis_is_made(context):
     if not context.skip_file_creation:

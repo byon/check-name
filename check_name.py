@@ -64,6 +64,8 @@ def parse_options_from_arguments(arguments):
                         help='path to file to be analyzed')
     parser.add_argument('-i', '--include', action='append',
                         help='directory to include in analysis')
+    parser.add_argument('-e', '--exclude', action='append',
+                        help='directory to exclude in analysis')
     return parser.parse_known_args(arguments[1:])
 
 
@@ -83,9 +85,13 @@ def report_diagnostics(output, diagnostics):
 
 
 def filtering_options(options):
-    if not options.include:
-        return ([],)
-    return (options.include)
+    return (_option_as_list(options.include), _option_as_list(options.exclude))
+
+
+def _option_as_list(option):
+    if not option:
+        return []
+    return option
 
 
 if __name__ == '__main__':

@@ -26,13 +26,19 @@ import os.path
 
 
 def should_filter(options, path):
-    include_directories = options[0]
+    include_directories, exclude_directories = options
     if not include_directories:
         return False
-    for directory in include_directories:
+    if not _is_in_directories(path, include_directories):
+        return True
+    return _is_in_directories(path, exclude_directories)
+
+
+def _is_in_directories(path, directories):
+    for directory in directories:
         if _is_in_directory(path, directory):
-            return False
-    return True
+            return True
+    return False
 
 
 def _is_in_directory(path, directory):

@@ -44,6 +44,11 @@ def test_multiple_include_directories_should_be_considered(tester):
     assert tester.test('b/file.cpp') is False
 
 
+def test_exclude_directories_should_be_filtered(tester):
+    tester.with_include_directory('a').with_exclude_directory('a/b')
+    assert tester.test('a/b/file.cpp') is True
+
+
 def test_directory_is_in_itself():
     assert filter._is_in_directory('a', 'a') is True
 
@@ -103,10 +108,17 @@ def tester(request):
 class _Tester:
     def __init__(self):
         self.include_directories = []
+        self.exclude_directories = []
 
     def with_include_directory(self, directory):
         self.include_directories.append(directory)
         return self
 
+    def with_exclude_directory(self, directory):
+        self.exclude_directories.append(directory)
+        return self
+
     def test(self, path):
-        return filter.should_filter((self.include_directories, ), path)
+        filtering_options = (self.include_directories,
+                             self.exclude_directories)
+        return filter.should_filter(filtering_options, path)

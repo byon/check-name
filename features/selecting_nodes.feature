@@ -16,3 +16,11 @@ Feature: Selecting nodes
     And filter includes directory "a"
     When analysis is made
     Then analysis should fail
+
+  Scenario: Excluding headers from directories in include list
+    Given source file that includes file "a/b/header.hpp"
+    And source file "a/b/header.hpp" contains namespace "violation"
+    And filter includes directory "a"
+    And filter excludes directory "a/b"
+    When analysis is made
+    Then analysis should succeed

@@ -52,19 +52,32 @@ def test_analysis_will_pass_unknown_options_to_clang(tester):
 def test_analysis_is_done(tester):
     tester.test()
     tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
-                                            ([],))
+                                            ([], []))
 
 
 def test_passing_include_directory_to_analysis(tester):
     tester.with_include_directory('a').test()
     tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
-                                            (['a']))
+                                            (['a'], []))
 
 
 def test_passing_multiple_include_directories_to_analysis(tester):
     tester.with_include_directory('a').with_include_directory('b').test()
     tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
-                                            (['a', 'b']))
+                                            (['a', 'b'], []))
+
+
+def test_passing_exclude_directory_to_analysis(tester):
+    tester.with_exclude_directory('a').test()
+    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+                                            ([], ['a']))
+
+
+def test_passing_include_and_exclude_directories_to_analysis(tester):
+    tester.with_include_directory('a').with_include_directory('b')
+    tester.with_exclude_directory('c').with_exclude_directory('d').test()
+    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+                                            (['a', 'b'], ['c', 'd']))
 
 
 def test_missing_source_file_is_an_error(tester):
@@ -131,6 +144,9 @@ class _Tester:
 
     def with_include_directory(self, directory):
         return self.with_additional_option('include', directory)
+
+    def with_exclude_directory(self, directory):
+        return self.with_additional_option('exclude', directory)
 
     def with_additional_option(self, name, value):
         self.extra_arguments += _option_as_list(name, value)

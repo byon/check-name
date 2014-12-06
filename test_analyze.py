@@ -38,7 +38,7 @@ def test_analyzing_empty_translation_unit(translation_unit, analyzer):
 def test_analyzing_one_namespace(translation_unit, analyzer):
     namespace = translation_unit.cursor.new_namespace('Foo')
     output = MagicMock()
-    analyze.analyze_translation_unit(output, translation_unit, ([], ))
+    analyze.analyze_translation_unit(output, translation_unit, ([], []))
     analyzer.assert_called_once_with(output, namespace)
 
 
