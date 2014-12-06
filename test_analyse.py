@@ -22,7 +22,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import analyze
+import analyse
 
 import clang
 
@@ -30,116 +30,116 @@ import pytest
 from mock import MagicMock, patch
 
 
-def test_analyzing_empty_translation_unit(translation_unit, analyzer):
-    analyze.analyze_translation_unit(MagicMock(), translation_unit, ([],))
-    assert analyzer.call_count == 0
+def test_analysing_empty_translation_unit(translation_unit, analyser):
+    analyse.analyse_translation_unit(MagicMock(), translation_unit, ([],))
+    assert analyser.call_count == 0
 
 
-def test_analyzing_one_namespace(translation_unit, analyzer):
+def test_analysing_one_namespace(translation_unit, analyser):
     namespace = translation_unit.cursor.new_namespace('Foo')
     output = MagicMock()
-    analyze.analyze_translation_unit(output, translation_unit, ([], []))
-    analyzer.assert_called_once_with(output, namespace)
+    analyse.analyse_translation_unit(output, translation_unit, ([], []))
+    analyser.assert_called_once_with(output, namespace)
 
 
-def test_only_declarations_are_analyzed(analyze_nodes_tester):
-    analyze_nodes_tester.with_non_declaration().test()
-    assert analyze_nodes_tester.analyzer.call_count == 0
+def test_only_declarations_are_analysed(analyse_nodes_tester):
+    analyse_nodes_tester.with_non_declaration().test()
+    assert analyse_nodes_tester.analyser.call_count == 0
 
 
-def test_children_are_analyzed_for_non_declarations(analyze_nodes_tester):
-    analyze_nodes_tester.root.new_non_declaration().new_namespace('a')
-    analyze_nodes_tester.test()
-    assert analyze_nodes_tester.analyzer.call_count == 1
+def test_children_are_analysed_for_non_declarations(analyse_nodes_tester):
+    analyse_nodes_tester.root.new_non_declaration().new_namespace('a')
+    analyse_nodes_tester.test()
+    assert analyse_nodes_tester.analyser.call_count == 1
 
 
-def test_analyzing_sequential_namespaces(analyze_nodes_tester):
-    analyze_nodes_tester.with_namespace('Foo').with_namespace('Bar').test()
-    assert analyze_nodes_tester.analyzer.call_count == 2
+def test_analysing_sequential_namespaces(analyse_nodes_tester):
+    analyse_nodes_tester.with_namespace('Foo').with_namespace('Bar').test()
+    assert analyse_nodes_tester.analyser.call_count == 2
 
 
-def test_analyzing_nested_namespaces(analyze_nodes_tester):
-    analyze_nodes_tester.root.new_namespace('Foo').new_namespace('Bar')
-    analyze_nodes_tester.test()
-    assert analyze_nodes_tester.analyzer.call_count == 2
+def test_analysing_nested_namespaces(analyse_nodes_tester):
+    analyse_nodes_tester.root.new_namespace('Foo').new_namespace('Bar')
+    analyse_nodes_tester.test()
+    assert analyse_nodes_tester.analyser.call_count == 2
 
 
-def test_filtering_is_done(analyze_nodes_tester):
-    node = analyze_nodes_tester.root.new_namespace('Foo')
-    analyze_nodes_tester.test()
-    analyze_nodes_tester.filter.assert_called_once_with(
-        analyze_nodes_tester.filtering_options, node.location.file.name)
+def test_filtering_is_done(analyse_nodes_tester):
+    node = analyse_nodes_tester.root.new_namespace('Foo')
+    analyse_nodes_tester.test()
+    analyse_nodes_tester.filter.assert_called_once_with(
+        analyse_nodes_tester.filtering_options, node.location.file.name)
 
 
-def test_filtered_nodes_are_not_analyzed(analyze_nodes_tester):
-    analyze_nodes_tester.filter.return_value = True
-    analyze_nodes_tester.with_namespace('Foo').test()
-    assert analyze_nodes_tester.analyzer.call_count == 0
+def test_filtered_nodes_are_not_analysed(analyse_nodes_tester):
+    analyse_nodes_tester.filter.return_value = True
+    analyse_nodes_tester.with_namespace('Foo').test()
+    assert analyse_nodes_tester.analyser.call_count == 0
 
 
-def test_root_is_not_checked_for_filtering(analyze_nodes_tester):
-    analyze_nodes_tester.test()
-    assert analyze_nodes_tester.filter.call_count == 0
+def test_root_is_not_checked_for_filtering(analyse_nodes_tester):
+    analyse_nodes_tester.test()
+    assert analyse_nodes_tester.filter.call_count == 0
 
 
 def test_camel_case_analysis_succeeds(output, node):
-    with patch('analyze.is_camel_case') as analyzer:
-        analyzer.return_value = True
-        analyze.analyse_camel_case(output, node)
+    with patch('analyse.is_camel_case') as analyser:
+        analyser.return_value = True
+        analyse.analyse_camel_case(output, node)
     assert 0 == output.rule_violation.call_count
 
 
 def test_camel_case_analysis_fails(output, node):
-    with patch('analyze.is_camel_case') as analyzer:
-        analyzer.return_value = False
-        analyze.analyse_camel_case(output, node)
+    with patch('analyse.is_camel_case') as analyser:
+        analyser.return_value = False
+        analyse.analyse_camel_case(output, node)
     output.rule_violation.assert_called_once_with(
         node.location, 'namespace', node.spelling, 'is not in CamelCase')
 
 
 def test_recognizing_camel_case_with_one_part():
-    assert analyze.is_camel_case('Foo')
+    assert analyse.is_camel_case('Foo')
 
 
 def test_recognizing_camel_case_with_multiple_parts():
-    assert analyze.is_camel_case('FooBar')
+    assert analyse.is_camel_case('FooBar')
 
 
 def test_recognizing_camel_case_with_number_at_end():
-    assert analyze.is_camel_case('Foo1234Bar')
+    assert analyse.is_camel_case('Foo1234Bar')
 
 
 def test_recognizing_camel_case_with_number_at_end_of_part():
-    assert analyze.is_camel_case('Foo1234Bar')
+    assert analyse.is_camel_case('Foo1234Bar')
 
 
 def test_recognizing_camel_case_error_when_all_lowercase():
-    assert not analyze.is_camel_case('foo')
+    assert not analyse.is_camel_case('foo')
 
 
 def test_recognizing_camel_case_error_when_starts_with_lowercase():
-    assert not analyze.is_camel_case('fooBar')
+    assert not analyse.is_camel_case('fooBar')
 
 
 def test_recognizing_camel_case_error_when_snake_case():
-    assert not analyze.is_camel_case('foo_bar')
+    assert not analyse.is_camel_case('foo_bar')
 
 
 def test_recognizing_camel_case_error_when_capitalized_snake_case():
-    assert not analyze.is_camel_case('Foo_Bar')
+    assert not analyse.is_camel_case('Foo_Bar')
 
 
 def test_recognizing_camel_case_error_when_too_many_uppercase():
-    assert not analyze.is_camel_case('MMHeight')
+    assert not analyse.is_camel_case('MMHeight')
 
 
 def test_recognizing_camel_case_error_with_number_at_middle_of_part():
-    assert not analyze.is_camel_case('Fo1234oBar')
+    assert not analyse.is_camel_case('Fo1234oBar')
 
 
 @pytest.fixture
-def analyzer(request):
-    result = patch('analyze.analyse_camel_case', autospec=True)
+def analyser(request):
+    result = patch('analyse.analyse_camel_case', autospec=True)
     request.addfinalizer(patch.stopall)
     return result.start()
 
@@ -157,8 +157,8 @@ def node():
 
 
 @pytest.fixture
-def analyze_nodes_tester(request):
-    result = _NodeAnalyzeTester()
+def analyse_nodes_tester(request):
+    result = _NodeAnalyseTester()
     request.addfinalizer(patch.stopall)
     return result
 
@@ -168,17 +168,17 @@ def output():
     return MagicMock()
 
 
-class _NodeAnalyzeTester:
+class _NodeAnalyseTester:
     def __init__(self):
         self.root = _Node('root')
-        self.analyzer = self._add_patch('analyze.analyse_camel_case')
+        self.analyser = self._add_patch('analyse.analyse_camel_case')
         self.filter = self._add_patch('filter.should_filter')
         self.filter.return_value = False
         self.output = MagicMock()
         self.filtering_options = MagicMock()
 
     def test(self):
-        analyze.analyze_nodes(self.output, self.root, self.filtering_options)
+        analyse.analyse_nodes(self.output, self.root, self.filtering_options)
 
     def with_namespace(self, name):
         self.root.new_namespace(name)

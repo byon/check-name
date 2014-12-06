@@ -1,8 +1,8 @@
-C++ naming analyzer for style used in my workplace. Just started, so don't expect this to be useful.
+C++ naming analyser for style used in my workplace. Just started, so don't expect this to be useful.
 
 Implemented by using python bindings to libclang. So far tested only on Linux.
 
-** Running the analyzer
+** Running the analyser
 
 Requires that python bindings to libclang are in PYTHONPATH. E.g.
 #+BEGIN_EXAMPLE

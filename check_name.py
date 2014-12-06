@@ -25,7 +25,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-import analyze
+import analyse
 import report
 
 import argparse
@@ -36,13 +36,13 @@ import clang.cindex
 def main(arguments):
     output = report.Output()
     try:
-        return do_analyzis(parse_options_from_arguments(arguments), output)
+        return do_analysis(parse_options_from_arguments(arguments), output)
     except clang.cindex.TranslationUnitLoadError as e:
         output.error(str(e))
         return 1
 
 
-def do_analyzis(all_options, output):
+def do_analysis(all_options, output):
     options, clang_options = all_options
     clang.cindex.conf.set_library_path(options.llvm_path)
 
@@ -51,7 +51,7 @@ def do_analyzis(all_options, output):
 
     report_diagnostics(output, translation_unit.diagnostics)
 
-    analyze.analyze_translation_unit(output, translation_unit,
+    analyse.analyse_translation_unit(output, translation_unit,
                                      filtering_options(options))
     if output.has_errors:
         return 1
@@ -63,7 +63,7 @@ def parse_options_from_arguments(arguments):
     parser.add_argument('-l', '--llvm_path', required=True,
                         help='path directory that contains llvm library')
     parser.add_argument('-t', '--target', required=True,
-                        help='path to file to be analyzed')
+                        help='path to file to be analysed')
     parser.add_argument('-i', '--include', action='append',
                         help='directory to include in analysis')
     parser.add_argument('-e', '--exclude', action='append',

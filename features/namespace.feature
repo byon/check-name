@@ -1,4 +1,4 @@
-Feature: Analyzing namespace names
+Feature: Analysing namespace names
 
   Scenario: Namespaces in CamelCase are not reported
     Given source with namespace "Abc"

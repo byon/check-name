@@ -51,32 +51,32 @@ def test_analysis_will_pass_unknown_options_to_clang(tester):
 
 def test_analysis_is_done(tester):
     tester.test()
-    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
                                             ([], []))
 
 
 def test_passing_include_directory_to_analysis(tester):
     tester.with_include_directory('a').test()
-    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
                                             (['a'], []))
 
 
 def test_passing_multiple_include_directories_to_analysis(tester):
     tester.with_include_directory('a').with_include_directory('b').test()
-    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
                                             (['a', 'b'], []))
 
 
 def test_passing_exclude_directory_to_analysis(tester):
     tester.with_exclude_directory('a').test()
-    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
                                             ([], ['a']))
 
 
 def test_passing_include_and_exclude_directories_to_analysis(tester):
     tester.with_include_directory('a').with_include_directory('b')
     tester.with_exclude_directory('c').with_exclude_directory('d').test()
-    tester.analyzer.assert_called_once_with(tester.output, tester.parse_result,
+    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
                                             (['a', 'b'], ['c', 'd']))
 
 
@@ -130,7 +130,7 @@ class _Tester:
         self.index.parse.return_value = self.parse_result
         self.index_class.return_value = self.index
 
-        self.analyzer = self._add_patch('analyze.analyze_translation_unit')
+        self.analyser = self._add_patch('analyse.analyse_translation_unit')
 
         self.output_creator = self._add_patch('report.Output')
         self.output = MagicMock()

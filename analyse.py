@@ -26,18 +26,18 @@ import filter
 import re
 
 
-def analyze_translation_unit(output, translation_unit, filter_options):
-    analyze_nodes(output, translation_unit.cursor, filter_options)
+def analyse_translation_unit(output, translation_unit, filter_options):
+    analyse_nodes(output, translation_unit.cursor, filter_options)
 
 
-def analyze_nodes(output, node, filter_options, root=True):
+def analyse_nodes(output, node, filter_options, root=True):
     if not root:
         if filter.should_filter(filter_options, node.location.file.name):
             return
         if node.kind.is_declaration():
             analyse_camel_case(output, node)
     for child in node.get_children():
-        analyze_nodes(output, child, filter_options, False)
+        analyse_nodes(output, child, filter_options, False)
 
 
 def analyse_camel_case(output, namespace):
