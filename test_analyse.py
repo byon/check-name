@@ -35,7 +35,7 @@ def test_analysing_empty_translation_unit(translation_unit, analyser):
     assert analyser.call_count == 0
 
 
-def test_analysing_one_namespace(translation_unit, analyser):
+def test_analysing_one_node(translation_unit, analyser):
     namespace = translation_unit.cursor.new_namespace('Foo')
     output = MagicMock()
     analyse.analyse_translation_unit(output, translation_unit, ([], []))
