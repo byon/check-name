@@ -97,46 +97,6 @@ def test_camel_case_analysis_fails(output, node):
         node.location, 'namespace', node.spelling, 'is not in CamelCase')
 
 
-def test_recognizing_camel_case_with_one_part():
-    assert analyse.is_camel_case('Foo')
-
-
-def test_recognizing_camel_case_with_multiple_parts():
-    assert analyse.is_camel_case('FooBar')
-
-
-def test_recognizing_camel_case_with_number_at_end():
-    assert analyse.is_camel_case('Foo1234Bar')
-
-
-def test_recognizing_camel_case_with_number_at_end_of_part():
-    assert analyse.is_camel_case('Foo1234Bar')
-
-
-def test_recognizing_camel_case_error_when_all_lowercase():
-    assert not analyse.is_camel_case('foo')
-
-
-def test_recognizing_camel_case_error_when_starts_with_lowercase():
-    assert not analyse.is_camel_case('fooBar')
-
-
-def test_recognizing_camel_case_error_when_snake_case():
-    assert not analyse.is_camel_case('foo_bar')
-
-
-def test_recognizing_camel_case_error_when_capitalized_snake_case():
-    assert not analyse.is_camel_case('Foo_Bar')
-
-
-def test_recognizing_camel_case_error_when_too_many_uppercase():
-    assert not analyse.is_camel_case('MMHeight')
-
-
-def test_recognizing_camel_case_error_with_number_at_middle_of_part():
-    assert not analyse.is_camel_case('Fo1234oBar')
-
-
 @pytest.fixture
 def analyser(request):
     result = patch('analyse.analyse_camel_case', autospec=True)
