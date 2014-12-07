@@ -77,6 +77,16 @@ class Namespace(_Node):
         _Node.__init__(self, name, 'namespace ' + name + '{\n', '}\n')
 
 
+class Class(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'class ' + name + ' {\n', '};\n')
+
+
+class Struct(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'struct ' + name + ' {\n', '};\n')
+
+
 class PreprocessorCondition(_Node):
     def __init__(self, condition):
         _Node.__init__(self, condition, '#ifdef ' + condition + '\n',

@@ -31,7 +31,15 @@ def identify_rules(node):
         return [CamelCaseRule('namespace')]
     if is_variable(node):
         return [HeadlessCamelCaseRule('variable')]
+    if is_class(node):
+        return identify_rules_for_class(node)
+    if is_struct(node):
+        return [CamelCaseRule('struct')]
     return []
+
+
+def identify_rules_for_class(node):
+    return [CamelCaseRule('class')]
 
 
 class Rule:
@@ -63,8 +71,16 @@ def is_headless_camel_case(name):
     return True if re.match('^[a-z]+\d*([A-Z][a-z]+\d*)*$', name) else False
 
 
+def is_class(node):
+    return clang.cindex.CursorKind.CLASS_DECL == node.kind
+
+
 def is_namespace(node):
     return clang.cindex.CursorKind.NAMESPACE == node.kind
+
+
+def is_struct(node):
+    return clang.cindex.CursorKind.STRUCT_DECL == node.kind
 
 
 def is_variable(node):

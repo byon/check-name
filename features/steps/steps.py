@@ -154,7 +154,9 @@ def _mandatory_options(path):
 
 
 def _identify_type(name):
-    type_map = {'namespace': ast.Namespace,
+    type_map = {'class': ast.Class,
+                'namespace': ast.Namespace,
                 'preprocessor_condition': ast.PreprocessorCondition,
+                'struct': ast.Struct,
                 'variable': ast.Variable}
     return type_map[name.replace(' ', '_').lower()]
