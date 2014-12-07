@@ -20,6 +20,14 @@ Requires that python bindings to libclang are in PYTHONPATH. E.g.
 $ export PYTHONPATH=../vendor/llvm/tools/clang/bindings/python/
 #+END_EXAMPLE
 
+The path to the LLVM dynamic library is required as --llvm_path option. The file to be analysed is passed as --target option. E.g.
+
+#+BEGIN_EXAMPLE
+$ ./check_name.py --llvm_path ../vendor/llvm/build/Release/lib --target foo.cpp
+#+END_EXAMPLE
+
+The rest of the options are passed to LLVM (e.g. include paths, preprocessor defines, etc.). Run check_name.py --help for more information.
+
 ** Testing
 
 Unit tests use pytest, so just:
