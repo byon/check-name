@@ -22,43 +22,31 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import filter
-import rules
+import clang
+import re
 
 
-def analyse_translation_unit(output, translation_unit, filter_options):
-    analyse_nodes(output, translation_unit.cursor, filter_options)
+class Rule:
+    def __init__(self, type_name, error_description, rule_test):
+        self.type_name = type_name
+        self.error_description = error_description
+        self.rule_test = rule_test
+
+    def test(self, node):
+        return self.rule_test(node.spelling)
 
 
-def analyse_nodes(output, node, filter_options, root=True):
-    if not root:
-        if filter.should_filter(filter_options, node.location.file.name):
-            return
-        if node.kind.is_declaration():
-            analyse_node(output, node)
-    for child in node.get_children():
-        analyse_nodes(output, child, filter_options, False)
+def is_camel_case(name):
+    return True if re.match('^([A-Z][a-z]+\d*)+$', name) else False
 
 
-def analyse_node(output, node):
-    if rules.is_namespace(node):
-        analyse_camel_case(output, node)
-    if rules.is_variable(node):
-        analyse_headless_camel_case(output, node)
+def is_headless_camel_case(name):
+    return True if re.match('^[a-z]+\d*([A-Z][a-z]+\d*)*$', name) else False
 
 
-def analyse_camel_case(output, node):
-    rule = rules.Rule('namespace', 'is not in CamelCase', rules.is_camel_case)
-    analyse_node_for_rule(output, node, rule)
+def is_namespace(node):
+    return clang.cindex.CursorKind.NAMESPACE == node.kind
 
 
-def analyse_headless_camel_case(output, node):
-    rule = rules.Rule('variable', 'is not in headlessCamelCase',
-                      rules.is_headless_camel_case)
-    analyse_node_for_rule(output, node, rule)
-
-
-def analyse_node_for_rule(output, node, rule):
-    if not rule.test(node):
-        output.rule_violation(node.location, rule.type_name, node.spelling,
-                              rule.error_description)
+def is_variable(node):
+    return clang.cindex.CursorKind.VAR_DECL == node.kind

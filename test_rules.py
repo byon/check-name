@@ -22,84 +22,84 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import analyse
+import rules
 
 
 def test_recognizing_camel_case_with_one_part():
-    assert analyse.is_camel_case('Foo')
+    assert rules.is_camel_case('Foo')
 
 
 def test_recognizing_camel_case_with_multiple_parts():
-    assert analyse.is_camel_case('FooBar')
+    assert rules.is_camel_case('FooBar')
 
 
 def test_recognizing_camel_case_with_number_at_end():
-    assert analyse.is_camel_case('Foo1234Bar')
+    assert rules.is_camel_case('Foo1234Bar')
 
 
 def test_recognizing_camel_case_with_number_at_end_of_part():
-    assert analyse.is_camel_case('Foo1234Bar')
+    assert rules.is_camel_case('Foo1234Bar')
 
 
 def test_recognizing_camel_case_error_when_all_lowercase():
-    assert not analyse.is_camel_case('foo')
+    assert not rules.is_camel_case('foo')
 
 
 def test_recognizing_camel_case_error_when_starts_with_lowercase():
-    assert not analyse.is_camel_case('fooBar')
+    assert not rules.is_camel_case('fooBar')
 
 
 def test_recognizing_camel_case_error_when_snake_case():
-    assert not analyse.is_camel_case('foo_bar')
+    assert not rules.is_camel_case('foo_bar')
 
 
 def test_recognizing_camel_case_error_when_capitalized_snake_case():
-    assert not analyse.is_camel_case('Foo_Bar')
+    assert not rules.is_camel_case('Foo_Bar')
 
 
 def test_recognizing_camel_case_error_when_too_many_uppercase():
-    assert not analyse.is_camel_case('MMHeight')
+    assert not rules.is_camel_case('MMHeight')
 
 
 def test_recognizing_camel_case_error_with_number_at_middle_of_part():
-    assert not analyse.is_camel_case('Fo1234oBar')
+    assert not rules.is_camel_case('Fo1234oBar')
 
 
 def test_recognizing_headless_camel_case_with_one_part():
-    assert analyse.is_headless_camel_case('foo')
+    assert rules.is_headless_camel_case('foo')
 
 
 def test_recognizing_headless_camel_case_with_multiple_parts():
-    assert analyse.is_headless_camel_case('fooBar')
+    assert rules.is_headless_camel_case('fooBar')
 
 
 def test_recognizing_headless_camel_case_with_number_at_end():
-    assert analyse.is_headless_camel_case('fooBar1234')
+    assert rules.is_headless_camel_case('fooBar1234')
 
 
 def test_recognizing_headless_camel_case_with_number_at_end_of_part():
-    assert analyse.is_headless_camel_case('foo1234Bar')
+    assert rules.is_headless_camel_case('foo1234Bar')
 
 
 def test_recognizing_headless_camel_case_error_when_all_uppercase():
-    assert not analyse.is_headless_camel_case('FOO')
+    assert not rules.is_headless_camel_case('FOO')
 
 
 def test_recognizing_headless_camel_case_error_when_starts_with_Uppercase():
-    assert not analyse.is_headless_camel_case('FooBar')
+    assert not rules.is_headless_camel_case('FooBar')
 
 
 def test_recognizing_headless_camel_case_error_when_snake_case():
-    assert not analyse.is_headless_camel_case('foo_bar')
+    assert not rules.is_headless_camel_case('foo_bar')
 
 
 def test_recognizing_headless_camel_case_error_when_capitalized_snake_case():
-    assert not analyse.is_headless_camel_case('Foo_Bar')
+    assert not rules.is_headless_camel_case('Foo_Bar')
 
 
 def test_recognizing_headless_camel_case_error_when_too_many_uppercase():
-    assert not analyse.is_headless_camel_case('isInWWF')
+    assert not rules.is_headless_camel_case('isInWWF')
 
 
 def test_recognizing_headless_camel_case_error_with_number_at_middle_of_part():
-    assert not analyse.is_headless_camel_case('fo1234oBar')
+    assert not rules.is_headless_camel_case('fo1234oBar')

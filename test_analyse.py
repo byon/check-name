@@ -99,14 +99,14 @@ def test_variables_are_analysed_for_headless_camelcase(analyse_node_tester):
 
 
 def test_camel_case_analysis_succeeds(output, node):
-    with patch('analyse.is_camel_case') as analyser:
+    with patch('rules.is_camel_case') as analyser:
         analyser.return_value = True
         analyse.analyse_camel_case(output, node)
     assert 0 == output.rule_violation.call_count
 
 
 def test_camel_case_analysis_fails(output, node):
-    with patch('analyse.is_camel_case') as analyser:
+    with patch('rules.is_camel_case') as analyser:
         analyser.return_value = False
         analyse.analyse_camel_case(output, node)
     output.rule_violation.assert_called_once_with(
