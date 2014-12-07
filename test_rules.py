@@ -22,7 +22,38 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+from clang.cindex import CursorKind
 import rules
+import pytest
+from mock import MagicMock
+
+
+def test_unidentified_node_will_have_no_rules(identify_rules_tester):
+    assert not identify_rules_tester.test()
+
+
+def test_namespace_should_have_camel_case_rule(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.NAMESPACE).test()
+    assert rules.CamelCaseRule in _rule_types(result)
+
+
+def test_variable_should_have_headless_camel_case_rule(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
+    assert rules.HeadlessCamelCaseRule in _rule_types(result)
+
+
+def test_construction_of_camel_case_rule():
+    rule = rules.CamelCaseRule('identifier')
+    assert rule.type_name == 'identifier'
+    assert rule.error_description == 'is not in CamelCase'
+    assert rule.rule_test == rules.is_camel_case
+
+
+def test_construction_of_headless_camel_case_rule():
+    rule = rules.HeadlessCamelCaseRule('identifier')
+    assert rule.type_name == 'identifier'
+    assert rule.error_description == 'is not in headlessCamelCase'
+    assert rule.rule_test == rules.is_headless_camel_case
 
 
 def test_recognizing_camel_case_with_one_part():
@@ -103,3 +134,30 @@ def test_recognizing_headless_camel_case_error_when_too_many_uppercase():
 
 def test_recognizing_headless_camel_case_error_with_number_at_middle_of_part():
     assert not rules.is_headless_camel_case('fo1234oBar')
+
+
+@pytest.fixture
+def identify_rules_tester():
+    return _IdentifyRulesTester()
+
+
+class _Node:
+    def __init__(self, kind=None):
+        self.kind = MagicMock()
+        self.kind.__eq__.side_effect = lambda k: k == kind
+
+
+class _IdentifyRulesTester:
+    def __init__(self):
+        self.node = _Node()
+
+    def test(self):
+        return rules.identify_rules(self.node)
+
+    def with_kind(self, kind):
+        self.node = _Node(kind)
+        return self
+
+
+def _rule_types(rules):
+    return [r.__class__ for r in rules]

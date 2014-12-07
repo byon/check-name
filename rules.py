@@ -26,6 +26,14 @@ import clang
 import re
 
 
+def identify_rules(node):
+    if is_namespace(node):
+        return [CamelCaseRule('namespace')]
+    if is_variable(node):
+        return [HeadlessCamelCaseRule('variable')]
+    return []
+
+
 class Rule:
     def __init__(self, type_name, error_description, rule_test):
         self.type_name = type_name
@@ -34,6 +42,17 @@ class Rule:
 
     def test(self, node):
         return self.rule_test(node.spelling)
+
+
+class CamelCaseRule(Rule):
+    def __init__(self, identifier):
+        Rule.__init__(self, identifier, 'is not in CamelCase', is_camel_case)
+
+
+class HeadlessCamelCaseRule(Rule):
+    def __init__(self, identifier):
+        Rule.__init__(self, identifier, 'is not in headlessCamelCase',
+                      is_headless_camel_case)
 
 
 def is_camel_case(name):

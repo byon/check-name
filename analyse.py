@@ -41,21 +41,8 @@ def analyse_nodes(output, node, filter_options, root=True):
 
 
 def analyse_node(output, node):
-    if rules.is_namespace(node):
-        analyse_camel_case(output, node)
-    if rules.is_variable(node):
-        analyse_headless_camel_case(output, node)
-
-
-def analyse_camel_case(output, node):
-    rule = rules.Rule('namespace', 'is not in CamelCase', rules.is_camel_case)
-    analyse_node_for_rule(output, node, rule)
-
-
-def analyse_headless_camel_case(output, node):
-    rule = rules.Rule('variable', 'is not in headlessCamelCase',
-                      rules.is_headless_camel_case)
-    analyse_node_for_rule(output, node, rule)
+    for rule in rules.identify_rules(node):
+        analyse_node_for_rule(output, node, rule)
 
 
 def analyse_node_for_rule(output, node, rule):

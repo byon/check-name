@@ -82,35 +82,49 @@ def test_root_is_not_checked_for_filtering(analyse_nodes_tester):
     assert analyse_nodes_tester.filter.call_count == 0
 
 
-def test_unrecognized_nodes_are_not_analysed(analyse_node_tester):
-    analyse_node_tester.with_unrecognized_node().test()
-    assert analyse_node_tester.camel_analyser.call_count == 0
-    assert analyse_node_tester.headless_camel_analyser.call_count == 0
+def test_node_is_passed_for_identification(analyse_node_tester):
+    analyse_node_tester.test()
+    method = analyse_node_tester.identifier
+    method.assert_called_once_with(analyse_node_tester.node)
 
 
-def test_namespaces_are_analysed_for_camelcase(analyse_node_tester):
-    analyse_node_tester.with_namespace('foo').test()
-    assert analyse_node_tester.camel_analyser.call_count == 1
+def test_unidentified_rules_are_not_analysed(analyse_node_tester):
+    analyse_node_tester.test()
+    assert 0 == analyse_node_tester.analyser.call_count
+
+
+def test_analysing_one_identified_rule(analyse_node_tester):
+    rule = MagicMock()
+    analyse_node_tester.with_rule(rule).test()
+    method = analyse_node_tester.analyser
+    method.assert_called_once_with(analyse_node_tester.output,
+                                   analyse_node_tester.node, rule)
 
 
 def test_variables_are_analysed_for_headless_camelcase(analyse_node_tester):
-    analyse_node_tester.with_variable('foo').test()
-    assert analyse_node_tester.headless_camel_analyser.call_count == 1
+    rule = MagicMock()
+    analyse_node_tester.with_rule(rule).with_rule(rule).test()
+    assert 2 == analyse_node_tester.analyser.call_count
 
 
-def test_camel_case_analysis_succeeds(output, node):
-    with patch('rules.is_camel_case') as analyser:
-        analyser.return_value = True
-        analyse.analyse_camel_case(output, node)
-    assert 0 == output.rule_violation.call_count
+def test_analysis_for_rule_passes_node(analyse_node_for_rule_tester):
+    analyse_node_for_rule_tester.test()
+    analyse_node_for_rule_tester.rule.test.assert_called_once_with(
+        analyse_node_for_rule_tester.node)
 
 
-def test_camel_case_analysis_fails(output, node):
-    with patch('rules.is_camel_case') as analyser:
-        analyser.return_value = False
-        analyse.analyse_camel_case(output, node)
-    output.rule_violation.assert_called_once_with(
-        node.location, 'namespace', node.spelling, 'is not in CamelCase')
+def test_analysis_for_rule_succeeds(analyse_node_for_rule_tester):
+    analyse_node_for_rule_tester.with_result(True).test()
+    assert 0 == analyse_node_for_rule_tester.output.rule_violation.call_count
+
+
+def test_analysis_for_rule_fails(analyse_node_for_rule_tester):
+    analyse_node_for_rule_tester.with_result(False).test()
+    method = analyse_node_for_rule_tester.output.rule_violation
+    method.assert_called_once_with(analyse_node_for_rule_tester.node.location,
+                                   'type name',
+                                   analyse_node_for_rule_tester.node.spelling,
+                                   'error description')
 
 
 @pytest.fixture
@@ -128,11 +142,6 @@ def translation_unit():
 
 
 @pytest.fixture
-def node():
-    return _Node('name')
-
-
-@pytest.fixture
 def analyse_nodes_tester(request):
     result = _AnalyseNodesTester()
     request.addfinalizer(patch.stopall)
@@ -147,8 +156,8 @@ def analyse_node_tester(request):
 
 
 @pytest.fixture
-def output():
-    return MagicMock()
+def analyse_node_for_rule_tester():
+    return _AnalyseNodeForRuleTester()
 
 
 class _AnalyseTesterBase:
@@ -184,27 +193,17 @@ class _AnalyseNodesTester(_AnalyseTesterBase):
 class _AnalyseNodeTester(_AnalyseTesterBase):
     def __init__(self):
         _AnalyseTesterBase.__init__(self)
-        self.root = _Node('node')
-        self.camel_analyser = self._add_patch('analyse.analyse_camel_case')
-        self.headless_camel_analyser = self._add_patch(
-            'analyse.analyse_headless_camel_case')
-        self.filter = self._add_patch('filter.should_filter')
-        self.filter.return_value = False
-
-    def with_namespace(self, name):
-        self.root = _Node.create_namespace(name)
-        return self
-
-    def with_variable(self, name):
-        self.root = _Node.create_variable(name)
-        return self
-
-    def with_unrecognized_node(self):
-        self.root.new_unrecognized_node()
-        return self
+        self.node = _Node('node')
+        self.identifier = self._add_patch('rules.identify_rules')
+        self.identifier.return_value = []
+        self.analyser = self._add_patch('analyse.analyse_node_for_rule')
 
     def test(self):
-        analyse.analyse_node(self.output, self.root)
+        analyse.analyse_node(self.output, self.node)
+
+    def with_rule(self, rule):
+        self.identifier.return_value.append(rule)
+        return self
 
 
 class _Node:
@@ -260,3 +259,19 @@ class _Node:
         child = creator(*args) if args else creator(args)
         self.children.append(child)
         return child
+
+
+class _AnalyseNodeForRuleTester:
+    def __init__(self):
+        self.node = _Node('name')
+        self.rule = MagicMock(type_name='type name',
+                              error_description='error description')
+        self.with_result(True)
+        self.output = MagicMock()
+
+    def test(self):
+        return analyse.analyse_node_for_rule(self.output, self.node, self.rule)
+
+    def with_result(self, result):
+        self.rule.test.return_value = result
+        return self
