@@ -2,6 +2,17 @@ C++ naming analyser for style used in my workplace. Just started, so don't expec
 
 Implemented by using python bindings to libclang. So far tested only on Linux.
 
+NOTE: Currently requires minor modifications to the libclang python bindings, as they do not properly expose functionality for checking if method is virtual or pure virtual. The changes are minor to bindings/python/clang/cindex.py (I'll have to see, if I bother to ask for an official fix):
+#+BEGIN_SRC Python
++    def is_pure_virtual_method(self):
++        return conf.lib.clang_CXXMethod_isPureVirtual(self)
++
++    def is_virtual_method(self):
++        return conf.lib.clang_CXXMethod_isVirtual(self)
++
+#+END_SRC
+
+
 ** Running the analyser
 
 Requires that python bindings to libclang are in PYTHONPATH. E.g.
