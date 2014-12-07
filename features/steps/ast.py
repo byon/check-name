@@ -93,6 +93,16 @@ class PreprocessorCondition(_Node):
                        '#endif\n')
 
 
+class PureVirtualMethod(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'virtual void ' + name + '() = 0;\n', '')
+
+
+class Method(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'void ' + name + '();\n', '')
+
+
 class Variable(_Node):
     def __init__(self, name):
         # Hard-coding the type, because it should be irrelevant for

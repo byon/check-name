@@ -9,3 +9,17 @@ Feature: Analysing class names
     Given source with struct "aBc"
     When analysis is made
     Then analysis reports "struct" "aBc" as "CamelCase" rule violation
+
+  @wip
+  Scenario: Interface classes require If-postfix
+    Given source with class "Class"
+    And nested pure virtual method "method"
+    When analysis is made
+    Then analysis reports "interface class" "Class" as "postfix \"If\"" rule violation
+
+  @wip
+  Scenario: Normal classes require do not require a postfix
+    Given source with class "Class"
+    And nested method "method"
+    When analysis is made
+    Then analysis should succeed

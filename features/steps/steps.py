@@ -141,7 +141,7 @@ def analysis_should_report_no_rule_violations(context):
 @then('analysis reports "{type}" "{name}" as "{cause}" rule violation')
 def analysis_reports_rule_violation(context, type, name, cause):
     analysis.check_for_failure(context.result)
-    match_(': ' + type + ' "' + name + '" is not in ' + cause,
+    match_(': ' + type + ' "' + name + '" .*' + cause,
            context.result.stderr)
 
 
@@ -155,8 +155,10 @@ def _mandatory_options(path):
 
 def _identify_type(name):
     type_map = {'class': ast.Class,
+                'method': ast.Method,
                 'namespace': ast.Namespace,
                 'preprocessor_condition': ast.PreprocessorCondition,
+                'pure_virtual_method': ast.PureVirtualMethod,
                 'struct': ast.Struct,
                 'variable': ast.Variable}
     return type_map[name.replace(' ', '_').lower()]

@@ -39,11 +39,14 @@ def identify_rules(node):
 
 
 def identify_rules_for_class(node):
-    return [CamelCaseRule('class')]
+    result = [CamelCaseRule('class')]
+    if is_interface_class(node):
+        result.append(PostFixRule('interface class', 'If'))
+    return result
 
 
 class Rule:
-    def __init__(self, type_name, error_description, rule_test):
+    def __init__(self, type_name, error_description, rule_test=None):
         self.type_name = type_name
         self.error_description = error_description
         self.rule_test = rule_test
@@ -63,6 +66,16 @@ class HeadlessCamelCaseRule(Rule):
                       is_headless_camel_case)
 
 
+class PostFixRule(Rule):
+    def __init__(self, identifier, postfix):
+        Rule.__init__(self, identifier,
+                      'does not have postfix "' + postfix + '"')
+        self.postfix = postfix
+
+    def test(self, node):
+        return node.spelling.endswith(self.postfix)
+
+
 def is_camel_case(name):
     return True if re.match('^([A-Z][a-z]+\d*)+$', name) else False
 
@@ -73,6 +86,17 @@ def is_headless_camel_case(name):
 
 def is_class(node):
     return clang.cindex.CursorKind.CLASS_DECL == node.kind
+
+
+def is_interface_class(node):
+    for method in [c for c in node.get_children() if is_method(c)]:
+        if method.is_pure_virtual_method():
+            return True
+    return False
+
+
+def is_method(node):
+    return clang.cindex.CursorKind.CXX_METHOD == node.kind
 
 
 def is_namespace(node):

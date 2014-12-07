@@ -52,6 +52,11 @@ def test_struct_should_have_camel_case_rule(identify_rules_tester):
     assert rules.CamelCaseRule in _rule_types(result)
 
 
+def test_interface_class_should_have_if_postfix(identify_rules_tester):
+    result = identify_rules_tester.with_interface_class().test()
+    assert _rule_of_type(result, rules.PostFixRule).postfix == 'If'
+
+
 def test_identifying_class():
     result = rules.identify_rules_for_class(_Node(CursorKind.CLASS_DECL))
     assert rules.CamelCaseRule in _rule_types(result)
@@ -69,6 +74,25 @@ def test_construction_of_headless_camel_case_rule():
     assert rule.type_name == 'identifier'
     assert rule.error_description == 'is not in headlessCamelCase'
     assert rule.rule_test == rules.is_headless_camel_case
+
+
+def test_construction_of_post_fix_rule():
+    rule = rules.PostFixRule('identifier', 'postfix')
+    assert rule.type_name == 'identifier'
+    assert rule.error_description == 'does not have postfix "postfix"'
+    # assert rule.rule_test == rules.has_postfix
+
+
+def test_missing_postfix_is_failure():
+    assert False == rules.PostFixRule('', 'P').test(_Node(name='name'))
+
+
+def test_postfix_in_middle_is_failure():
+    assert False == rules.PostFixRule('', 'P').test(_Node(name='naPme'))
+
+
+def test_existin_postfix_is_success():
+    assert True == rules.PostFixRule('', 'P').test(_Node(name='nameP'))
 
 
 def test_recognizing_camel_case_with_one_part():
@@ -157,9 +181,32 @@ def identify_rules_tester():
 
 
 class _Node:
-    def __init__(self, kind=None):
+    def __init__(self, kind=None, name=None):
         self.kind = MagicMock()
         self.kind.__eq__.side_effect = lambda k: k == kind
+        self.spelling = name if name else ''
+        self.pure_virtual_method = False
+        self.children = []
+
+    def add_child(self, child):
+        self.children.append(child)
+
+    def get_children(self):
+        return self.children
+
+
+class _Method(_Node):
+    def __init__(self, virtual=False, pure_virtual=False, name=None):
+        assert not pure_virtual or (pure_virtual and virtual)
+        _Node.__init__(self, CursorKind.CXX_METHOD, name)
+        self.virtual = virtual
+        self.pure_virtual = pure_virtual
+
+    def is_pure_virtual_method(self):
+        return self.pure_virtual
+
+    def is_virtual_method(self):
+        return self.virtual
 
 
 class _IdentifyRulesTester:
@@ -173,6 +220,18 @@ class _IdentifyRulesTester:
         self.node = _Node(kind)
         return self
 
+    def with_interface_class(self):
+        self.node = _Node(CursorKind.CLASS_DECL)
+        self.node.add_child(_Method(True, True))
+        return self
+
 
 def _rule_types(rules):
     return [r.__class__ for r in rules]
+
+
+def _rule_of_type(rules, type):
+    for rule in rules:
+        if rule.__class__ == type:
+            return rule
+    assert False, 'Could not find type ' + type.__name__
