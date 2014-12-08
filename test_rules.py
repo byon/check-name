@@ -173,6 +173,10 @@ def test_recognizing_headless_camel_case_with_number_at_end_of_part():
     assert rules.is_headless_camel_case('foo1234Bar')
 
 
+def test_recognizing_headless_camel_case_with_one_letter_postfix():
+    assert rules.is_headless_camel_case('fooBarM')
+
+
 def test_recognizing_headless_camel_case_error_when_all_uppercase():
     assert not rules.is_headless_camel_case('FOO')
 

@@ -21,3 +21,9 @@ Feature: Analysing variable names
     And nested variable "abc"
     When analysis is made
     Then analysis reports "member variable" "abc" as "postfix \"M\"" rule violation
+
+  Scenario: Member variables with M-postfix are not reported
+    Given source with class "Class"
+    And nested variable "abcM"
+    When analysis is made
+    Then analysis should succeed

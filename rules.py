@@ -90,7 +90,8 @@ def is_camel_case(name):
 
 
 def is_headless_camel_case(name):
-    return True if re.match('^[a-z]+\d*([A-Z][a-z]+\d*)*$', name) else False
+    expression = '^[a-z]+\d*([A-Z][a-z]+\d*)*[A-Z]{0,1}$'
+    return True if re.match(expression, name) else False
 
 
 def is_class(node):
