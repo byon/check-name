@@ -29,7 +29,12 @@ import re
 def identify_rules(node):
     if is_namespace(node):
         return [CamelCaseRule('namespace')]
+    if is_member(node):
+        return [HeadlessCamelCaseRule('member variable'),
+                PostFixRule('member variable', 'M')]
     if is_variable(node):
+        return [HeadlessCamelCaseRule('variable')]
+    if is_member(node):
         return [HeadlessCamelCaseRule('variable')]
     if is_method(node):
         return [HeadlessCamelCaseRule('method')]
@@ -101,6 +106,10 @@ def is_interface_class(node):
 
 def is_function(node):
     return clang.cindex.CursorKind.FUNCTION_DECL == node.kind
+
+
+def is_member(node):
+    return clang.cindex.CursorKind.FIELD_DECL == node.kind
 
 
 def is_method(node):

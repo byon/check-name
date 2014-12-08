@@ -52,6 +52,18 @@ def test_function_should_have_headless_camel_case_rule(identify_rules_tester):
     assert rules.HeadlessCamelCaseRule in _rule_types(result)
 
 
+def test_member_variable_should_have_headless_camel_case_rule(
+        identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
+    assert rules.HeadlessCamelCaseRule in _rule_types(result)
+
+
+def test_member_variable_should_have_postfix_m_rule(
+        identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
+    assert rules.HeadlessCamelCaseRule in _rule_types(result)
+
+
 def test_class_should_have_camel_case_rule(identify_rules_tester):
     result = identify_rules_tester.with_kind(CursorKind.CLASS_DECL).test()
     assert rules.CamelCaseRule in _rule_types(result)
