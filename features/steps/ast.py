@@ -98,9 +98,14 @@ class PureVirtualMethod(_Node):
         _Node.__init__(self, name, 'virtual void ' + name + '() = 0;\n', '')
 
 
-class Method(_Node):
+class Function(_Node):
     def __init__(self, name):
         _Node.__init__(self, name, 'void ' + name + '();\n', '')
+
+
+# Currently Method is exactly the same as Function
+class Method(Function):
+    pass
 
 
 class Variable(_Node):

@@ -31,6 +31,10 @@ def identify_rules(node):
         return [CamelCaseRule('namespace')]
     if is_variable(node):
         return [HeadlessCamelCaseRule('variable')]
+    if is_method(node):
+        return [HeadlessCamelCaseRule('method')]
+    if is_function(node):
+        return [HeadlessCamelCaseRule('function')]
     if is_class(node):
         return identify_rules_for_class(node)
     if is_struct(node):
@@ -93,6 +97,10 @@ def is_interface_class(node):
         if method.is_pure_virtual_method():
             return True
     return False
+
+
+def is_function(node):
+    return clang.cindex.CursorKind.FUNCTION_DECL == node.kind
 
 
 def is_method(node):
