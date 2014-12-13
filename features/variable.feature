@@ -27,3 +27,9 @@ Feature: Analysing variable names
     And nested variable "abcM"
     When analysis is made
     Then analysis should succeed
+
+  Scenario: References without r-prefix are reported
+    Given source with variable "a"
+    And reference variable "b" that is assigned "a"
+    When analysis is made
+    Then analysis reports "reference variable" "b" as "prefix \"r\"" rule violation

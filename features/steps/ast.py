@@ -109,10 +109,15 @@ class Method(Function):
 
 
 class Variable(_Node):
-    def __init__(self, name):
-        # Hard-coding the type, because it should be irrelevant for
-        # the purposes of check_name.
-        _Node.__init__(self, name, 'int ' + name, ';')
+    def __init__(self, name, type=None, value=None):
+        type = type if type else 'int'
+        assignment = ' = ' + value if value else ''
+        _Node.__init__(self, name, type + ' ' + name, assignment + ';\n')
+
+
+class ReferenceVariable(Variable):
+    def __init__(self, name, referencedVariable):
+        Variable.__init__(self, name, 'int&', referencedVariable)
 
 
 class Warning(_Node):

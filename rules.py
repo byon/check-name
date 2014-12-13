@@ -33,7 +33,7 @@ def identify_rules(node):
         return [HeadlessCamelCaseRule('member variable'),
                 PostFixRule('member variable', 'M')]
     if is_variable(node):
-        return [HeadlessCamelCaseRule('variable')]
+        return identify_rules_for_variables(node)
     if is_member(node):
         return [HeadlessCamelCaseRule('variable')]
     if is_method(node):
@@ -51,6 +51,13 @@ def identify_rules_for_class(node):
     result = [CamelCaseRule('class')]
     if is_interface_class(node):
         result.append(PostFixRule('interface class', 'If'))
+    return result
+
+
+def identify_rules_for_variables(node):
+    result = [HeadlessCamelCaseRule('variable')]
+    if is_reference(node):
+        result.append(PreFixRule('reference variable', 'r'))
     return result
 
 
@@ -83,6 +90,16 @@ class PostFixRule(Rule):
 
     def test(self, node):
         return node.spelling.endswith(self.postfix)
+
+
+class PreFixRule(Rule):
+    def __init__(self, identifier, prefix):
+        Rule.__init__(self, identifier,
+                      'does not have prefix "' + prefix + '"')
+        self.prefix = prefix
+
+    def test(self, node):
+        return node.spelling.startswith(self.prefix)
 
 
 def is_camel_case(name):
@@ -127,3 +144,7 @@ def is_struct(node):
 
 def is_variable(node):
     return clang.cindex.CursorKind.VAR_DECL == node.kind
+
+
+def is_reference(node):
+    return clang.cindex.TypeKind.LVALUEREFERENCE == node.type.kind

@@ -22,7 +22,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-from clang.cindex import CursorKind
+from clang.cindex import CursorKind, TypeKind
 import rules
 import pytest
 from mock import MagicMock
@@ -62,6 +62,11 @@ def test_member_variable_should_have_postfix_m_rule(
         identify_rules_tester):
     result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
     assert rules.HeadlessCamelCaseRule in _rule_types(result)
+
+
+def test_reference_variable_should_have_prefix_r_rule(identify_rules_tester):
+    result = identify_rules_tester.with_reference_variable().test()
+    assert _rule_of_type(result, rules.PreFixRule).prefix == 'r'
 
 
 def test_class_should_have_camel_case_rule(identify_rules_tester):
@@ -213,6 +218,7 @@ class _Node:
         self.spelling = name if name else ''
         self.pure_virtual_method = False
         self.children = []
+        self.type = MagicMock()
 
     def add_child(self, child):
         self.children.append(child)
@@ -249,6 +255,11 @@ class _IdentifyRulesTester:
     def with_interface_class(self):
         self.node = _Node(CursorKind.CLASS_DECL)
         self.node.add_child(_Method(True, True))
+        return self
+
+    def with_reference_variable(self):
+        self.node = _Node(CursorKind.VAR_DECL)
+        self.node.type.kind = TypeKind.LVALUEREFERENCE
         return self
 
 

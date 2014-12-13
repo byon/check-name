@@ -47,6 +47,11 @@ def source_with_type(context, type, name):
     context.ast.add_child(_identify_type(type)(name))
 
 
+@given('reference variable "{name}" that is assigned "{value}"')
+def assigned_reference_variable(context, name, value):
+    context.ast.add_child(ast.ReferenceVariable(name, value))
+
+
 @given('nested {type} "{name}"')
 def contains_type(context, type, name):
     context.ast.open_child.add_child(_identify_type(type)(name))
@@ -161,5 +166,6 @@ def _identify_type(name):
                 'preprocessor_condition': ast.PreprocessorCondition,
                 'pure_virtual_method': ast.PureVirtualMethod,
                 'struct': ast.Struct,
+                'reference_variable': ast.ReferenceVariable,
                 'variable': ast.Variable}
     return type_map[name.replace(' ', '_').lower()]
