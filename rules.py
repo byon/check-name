@@ -29,13 +29,8 @@ import re
 def identify_rules(node):
     if is_namespace(node):
         return [CamelCaseRule('namespace')]
-    if is_member(node):
-        return [HeadlessCamelCaseRule('member variable'),
-                PostFixRule('member variable', 'M')]
-    if is_variable(node):
+    if is_member(node) or is_variable(node):
         return identify_rules_for_variables(node)
-    if is_member(node):
-        return [HeadlessCamelCaseRule('variable')]
     if is_method(node):
         return [HeadlessCamelCaseRule('method')]
     if is_function(node):
@@ -55,10 +50,23 @@ def identify_rules_for_class(node):
 
 
 def identify_rules_for_variables(node):
-    result = [HeadlessCamelCaseRule('variable')]
+    result = []
+    postfix_size = 0
+    prefix_size = 0
+    if is_member(node):
+        result.append(PostFixRule('member variable', 'M'))
+        postfix_size = 1
     if is_reference(node):
         result.append(PreFixRule('reference variable', 'r'))
+        prefix_size = 1
+    result.append(identify_case_rule(node, prefix_size, postfix_size))
     return result
+
+
+def identify_case_rule(node, prefix_size, postfix_size):
+    if prefix_size > 0:
+        return CamelCaseRule('variable', prefix_size, postfix_size)
+    return HeadlessCamelCaseRule('variable', postfix_size)
 
 
 class Rule:
@@ -71,15 +79,30 @@ class Rule:
         return self.rule_test(node.spelling)
 
 
-class CamelCaseRule(Rule):
-    def __init__(self, identifier):
-        Rule.__init__(self, identifier, 'is not in CamelCase', is_camel_case)
+class PartialCheckRule(Rule):
+    def __init__(self, type_name, error_description, rule_test,
+                 prefix_size, postfix_size):
+        Rule.__init__(self, type_name, error_description, rule_test)
+        self.prefix_size = prefix_size
+        self.postfix_size = postfix_size
+
+    def test(self, node):
+        end = -self.postfix_size if self.postfix_size > 0 else None
+        part_to_check = node.spelling[self.prefix_size:end]
+        return self.rule_test(part_to_check)
 
 
-class HeadlessCamelCaseRule(Rule):
-    def __init__(self, identifier):
-        Rule.__init__(self, identifier, 'is not in headlessCamelCase',
-                      is_headless_camel_case)
+class CamelCaseRule(PartialCheckRule):
+    def __init__(self, identifier, prefix_size=0, postfix_size=0):
+        PartialCheckRule.__init__(self, identifier, 'is not in CamelCase',
+                                  is_camel_case, prefix_size, postfix_size)
+
+
+class HeadlessCamelCaseRule(PartialCheckRule):
+    def __init__(self, identifier, postfix_size=0):
+        description = 'is not in headlessCamelCase'
+        PartialCheckRule.__init__(self, identifier, description,
+                                  is_headless_camel_case, 0, postfix_size)
 
 
 class PostFixRule(Rule):
@@ -107,7 +130,7 @@ def is_camel_case(name):
 
 
 def is_headless_camel_case(name):
-    expression = '^[a-z]+\d*([A-Z][a-z]+\d*)*[A-Z]{0,1}$'
+    expression = '^[a-z]+\d*([A-Z][a-z]+\d*)*$'
     return True if re.match(expression, name) else False
 
 

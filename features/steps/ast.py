@@ -108,6 +108,11 @@ class Method(Function):
     pass
 
 
+class Constructor(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, name + '();\n', '')
+
+
 class Variable(_Node):
     def __init__(self, name, type=None, value=None):
         type = type if type else 'int'
@@ -116,7 +121,7 @@ class Variable(_Node):
 
 
 class ReferenceVariable(Variable):
-    def __init__(self, name, referencedVariable):
+    def __init__(self, name, referencedVariable=None):
         Variable.__init__(self, name, 'int&', referencedVariable)
 
 

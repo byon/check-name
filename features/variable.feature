@@ -29,16 +29,20 @@ Scenario Outline: Succeeding analysis
     Then analysis should report no rule violations
 
   Examples: Names that follow the rules
-  | type | name      |
-  |      | variableM |
+  | type      | name       |
+  |           | variableM  |
+  | reference | rVariableM |
 
   Scenario Outline: Failing member variable analysis
     Given source with class "Class"
     And nested <type> variable "<name>"
     When analysis is made
-    Then analysis reports "member variable" "<name>" as "<rule>" rule violation
+    Then analysis reports "variable" "<name>" as "<rule>" rule violation
 
   Examples: Names that break the rules
-  | name | type | rule              |
-  | AbcM |      | headlessCamelCase |
-  | abc  |      | postfix "M"       |
+  | name       | type      | rule              |
+  | AbcM       |           | headlessCamelCase |
+  | abc        |           | postfix "M"       |
+  | variableM  | reference | prefix "r"        |
+  | rvariable  | reference | postfix "M"       |
+  | rvariableM | reference | CamelCase         |

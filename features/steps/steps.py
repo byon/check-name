@@ -53,6 +53,14 @@ def source_with_type(context, type, name):
     context.ast.add_child(_identify_type(type)(name))
 
 
+@given('nested reference variable "{name}"')
+def contains_reference_variable(context, name):
+    open_child = context.ast.open_child
+    assert open_child.__class__ == ast.Class
+    open_child.add_child(ast.Constructor(open_child.id))
+    open_child.add_child(ast.ReferenceVariable(name))
+
+
 @given('nested {type} "{name}"')
 def contains_type(context, type, name):
     context.ast.open_child.add_child(_identify_type(type)(name))
@@ -147,7 +155,7 @@ def analysis_should_report_no_rule_violations(context):
 @then('analysis reports "{type}" "{name}" as "{cause}" rule violation')
 def analysis_reports_rule_violation(context, type, name, cause):
     analysis.check_for_failure(context.result)
-    match_(': ' + type.strip() + ' "' + name + '" .*' + cause,
+    match_(type.strip() + ' "' + name + '" .*' + cause,
            context.result.stderr)
 
 

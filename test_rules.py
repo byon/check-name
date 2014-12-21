@@ -55,18 +55,23 @@ def test_function_should_have_headless_camel_case_rule(identify_rules_tester):
 def test_member_variable_should_have_headless_camel_case_rule(
         identify_rules_tester):
     result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
-    assert rules.HeadlessCamelCaseRule in _rule_types(result)
+    assert _rule_of_type(result, rules.HeadlessCamelCaseRule).postfix_size == 1
 
 
 def test_member_variable_should_have_postfix_m_rule(
         identify_rules_tester):
     result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
-    assert rules.HeadlessCamelCaseRule in _rule_types(result)
+    assert _rule_of_type(result, rules.PostFixRule).postfix == 'M'
 
 
 def test_reference_variable_should_have_prefix_r_rule(identify_rules_tester):
     result = identify_rules_tester.with_reference_variable().test()
     assert _rule_of_type(result, rules.PreFixRule).prefix == 'r'
+
+
+def test_reference_member_should_have_camel_case_rule(identify_rules_tester):
+    result = identify_rules_tester.with_reference_member().test()
+    assert _rule_of_type(result, rules.CamelCaseRule).prefix_size == 1
 
 
 def test_class_should_have_camel_case_rule(identify_rules_tester):
@@ -89,18 +94,44 @@ def test_identifying_class():
     assert rules.CamelCaseRule in _rule_types(result)
 
 
-def test_construction_of_camel_case_rule():
-    rule = rules.CamelCaseRule('identifier')
+def test_construction_of_rule():
+    test = MagicMock()
+    rule = rules.Rule('identifier', 'description', test)
     assert rule.type_name == 'identifier'
-    assert rule.error_description == 'is not in CamelCase'
-    assert rule.rule_test == rules.is_camel_case
+    assert rule.error_description == 'description'
+    assert rule.rule_test == test
+
+
+def test_construction_of_partial_check_rule():
+    rule = rules.PartialCheckRule('', '', MagicMock(), 12, 34)
+    assert 12 == rule.prefix_size
+    assert 34 == rule.postfix_size
+
+
+def test_partial_check_rule_will_not_check_pre_and_post_fixes():
+    test = MagicMock()
+    rule = rules.PartialCheckRule('', '', test, 3, 4)
+    rule.test(_Node(name='preContentPost'))
+    test.assert_called_once_with('Content')
+
+
+def test_partial_check_rule_will_whole_content_when_sizes_are_zero():
+    test = MagicMock()
+    rule = rules.PartialCheckRule('', '', test, 0, 0)
+    rule.test(_Node(name='preContentPost'))
+    test.assert_called_once_with('preContentPost')
+
+
+def test_construction_of_camel_case_rule():
+    rule = rules.CamelCaseRule('identifier', 4321, 1234)
+    assert 4321 == rule.prefix_size
+    assert 1234 == rule.postfix_size
 
 
 def test_construction_of_headless_camel_case_rule():
-    rule = rules.HeadlessCamelCaseRule('identifier')
-    assert rule.type_name == 'identifier'
-    assert rule.error_description == 'is not in headlessCamelCase'
-    assert rule.rule_test == rules.is_headless_camel_case
+    rule = rules.HeadlessCamelCaseRule('identifier', 1234)
+    assert 0 == rule.prefix_size
+    assert 1234 == rule.postfix_size
 
 
 def test_construction_of_post_fix_rule():
@@ -174,10 +205,6 @@ def test_recognizing_headless_camel_case_with_number_at_end():
 
 def test_recognizing_headless_camel_case_with_number_at_end_of_part():
     assert rules.is_headless_camel_case('foo1234Bar')
-
-
-def test_recognizing_headless_camel_case_with_one_letter_postfix():
-    assert rules.is_headless_camel_case('fooBarM')
 
 
 def test_recognizing_headless_camel_case_error_when_all_uppercase():
@@ -257,6 +284,11 @@ class _IdentifyRulesTester:
 
     def with_reference_variable(self):
         self.node = _Node(CursorKind.VAR_DECL)
+        self.node.type.kind = TypeKind.LVALUEREFERENCE
+        return self
+
+    def with_reference_member(self):
+        self.node = _Node(CursorKind.FIELD_DECL)
         self.node.type.kind = TypeKind.LVALUEREFERENCE
         return self
 
