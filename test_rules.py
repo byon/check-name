@@ -105,9 +105,7 @@ def test_construction_of_headless_camel_case_rule():
 
 def test_construction_of_post_fix_rule():
     rule = rules.PostFixRule('identifier', 'postfix')
-    assert rule.type_name == 'identifier'
-    assert rule.error_description == 'does not have postfix "postfix"'
-    # assert rule.rule_test == rules.has_postfix
+    assert rule.postfix == 'postfix'
 
 
 def test_missing_postfix_is_failure():
