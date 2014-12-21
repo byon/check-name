@@ -42,14 +42,15 @@ def source_file_does_not_exist(context):
     context.skip_file_creation = True
 
 
+@given('source with reference variable "{name}"')
+def source_with_reference_variable(context, name):
+    context.ast.add_child(ast.Variable('referenced'))
+    context.ast.add_child(ast.ReferenceVariable(name, 'referenced'))
+
+
 @given('source with {type} "{name}"')
 def source_with_type(context, type, name):
     context.ast.add_child(_identify_type(type)(name))
-
-
-@given('reference variable "{name}" that is assigned "{value}"')
-def assigned_reference_variable(context, name, value):
-    context.ast.add_child(ast.ReferenceVariable(name, value))
 
 
 @given('nested {type} "{name}"')
@@ -146,7 +147,7 @@ def analysis_should_report_no_rule_violations(context):
 @then('analysis reports "{type}" "{name}" as "{cause}" rule violation')
 def analysis_reports_rule_violation(context, type, name, cause):
     analysis.check_for_failure(context.result)
-    match_(': ' + type + ' "' + name + '" .*' + cause,
+    match_(': ' + type.strip() + ' "' + name + '" .*' + cause,
            context.result.stderr)
 
 
@@ -168,4 +169,4 @@ def _identify_type(name):
                 'struct': ast.Struct,
                 'reference_variable': ast.ReferenceVariable,
                 'variable': ast.Variable}
-    return type_map[name.replace(' ', '_').lower()]
+    return type_map[name.strip().replace(' ', '_').lower()]

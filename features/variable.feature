@@ -1,35 +1,44 @@
 Feature: Analysing variable names
 
-  Scenario: Variables in headlessCamelCase are not reported
-    Given source with variable "aBc"
+Scenario Outline: Succeeding analysis
+    Given source with <type> variable "<name>"
     When analysis is made
     Then analysis should report no rule violations
 
-  Scenario: Variables not in headlessCamelCase are reported
-    Given source with variable "Abc"
-    When analysis is made
-    Then analysis reports "variable" "Abc" as "headlessCamelCase" rule violation
+  Examples: Names that follow the rules
+  | type      | name              |
+  |           | variable          |
+  |           | aVariable         |
+  |           | headlessCamelCase |
+  | reference | rVariable         |
 
-  Scenario: Member variables not in HeadlessCamelCase are reported
+  Scenario Outline: Failing analysis
+    Given source with <type> variable "<name>"
+    When analysis is made
+    Then analysis reports "<type> variable" "<name>" as "<rule>" rule violation
+
+  Examples: Names that break the rules
+  | name | type      | rule              |
+  | Foo  |           | headlessCamelCase |
+  | foo  | reference | prefix "r"        |
+
+  Scenario Outline: Succeeding member variable analysis
     Given source with class "Class"
-    And nested variable "Abc"
+    And nested <type> variable "<name>"
     When analysis is made
-    Then analysis reports "member variable" "Abc" as "headlessCamelCase" rule violation
+    Then analysis should report no rule violations
 
-  Scenario: Member variables without M-postfix are reported
+  Examples: Names that follow the rules
+  | type | name      |
+  |      | variableM |
+
+  Scenario Outline: Failing member variable analysis
     Given source with class "Class"
-    And nested variable "abc"
+    And nested <type> variable "<name>"
     When analysis is made
-    Then analysis reports "member variable" "abc" as "postfix \"M\"" rule violation
+    Then analysis reports "member variable" "<name>" as "<rule>" rule violation
 
-  Scenario: Member variables with M-postfix are not reported
-    Given source with class "Class"
-    And nested variable "abcM"
-    When analysis is made
-    Then analysis should succeed
-
-  Scenario: References without r-prefix are reported
-    Given source with variable "a"
-    And reference variable "b" that is assigned "a"
-    When analysis is made
-    Then analysis reports "reference variable" "b" as "prefix \"r\"" rule violation
+  Examples: Names that break the rules
+  | name | type | rule              |
+  | AbcM |      | headlessCamelCase |
+  | abc  |      | postfix "M"       |
