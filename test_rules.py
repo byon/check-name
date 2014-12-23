@@ -113,7 +113,7 @@ def test_postfix_in_middle_is_failure():
     assert False == rules.PostFixRule('', 'P').test(_Node(name='naPme'))
 
 
-def test_existin_postfix_is_success():
+def test_existing_postfix_is_success():
     assert True == rules.PostFixRule('', 'P').test(_Node(name='nameP'))
 
 
