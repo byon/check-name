@@ -102,6 +102,16 @@ def test_construction_of_rule():
     assert rule.rule_test == test
 
 
+def test_noticing_rule_failure():
+    test = MagicMock(return_value=False)
+    assert False == rules.Rule('', '', test).test(_Node(name=''))
+
+
+def test_noticing_rule_success():
+    test = MagicMock(return_value=True)
+    assert True == rules.Rule('', '', test).test(_Node(name=''))
+
+
 def test_construction_of_partial_check_rule():
     rule = rules.PartialCheckRule('', '', MagicMock(), 12, 34)
     assert 12 == rule.prefix_size
