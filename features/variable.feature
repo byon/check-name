@@ -12,15 +12,17 @@ Scenario Outline: Succeeding analysis
   |           | headlessCamelCase |
   | reference | rVariable         |
 
+  @wip
   Scenario Outline: Failing analysis
     Given source with <type> variable "<name>"
     When analysis is made
     Then analysis reports "<type> variable" "<name>" as "<rule>" rule violation
 
   Examples: Names that break the rules
-  | name | type      | rule              |
-  | Foo  |           | headlessCamelCase |
-  | foo  | reference | prefix "r"        |
+  | name | type      | rule                 |
+  | Foo  |           | headlessCamelCase    |
+  | foo  | reference | prefix "r"           |
+  | rFoo |           | redundant prefix "r" |
 
   Scenario Outline: Succeeding member variable analysis
     Given source with class "Class"

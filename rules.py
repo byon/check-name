@@ -57,8 +57,8 @@ def identify_rules_for_variables(node):
         result.append(PostFixRule('member variable', 'M'))
         postfix_size = 1
     if is_reference(node):
-        result.append(PreFixRule('reference variable', 'r'))
         prefix_size = 1
+    result.append(PreFixRule('reference variable', 'r', is_reference))
     result.append(identify_case_rule(node, prefix_size, postfix_size))
     return result
 
@@ -77,6 +77,25 @@ class Rule:
 
     def test(self, node):
         return self.rule_test(node.spelling)
+
+
+class ConditionalRule(Rule):
+    def __init__(self, type_name, original_description, inverted_description,
+                 rule_test, condition=None):
+        Rule.__init__(self, type_name, original_description, rule_test)
+        self.original_description = original_description
+        self.inverted_description = inverted_description
+        self.condition = condition
+
+    def test(self, node):
+        result = self.rule_test(node.spelling)
+        if self._should_invert_result(node):
+            self.error_description = self.inverted_description
+            return not result
+        return result
+
+    def _should_invert_result(self, node):
+        return self.condition and not self.condition(node)
 
 
 class PartialCheckRule(Rule):
@@ -105,24 +124,24 @@ class HeadlessCamelCaseRule(PartialCheckRule):
                                   is_headless_camel_case, 0, postfix_size)
 
 
-class PostFixRule(Rule):
-    def __init__(self, identifier, postfix):
-        Rule.__init__(self, identifier,
-                      'does not have postfix "' + postfix + '"')
+class PostFixRule(ConditionalRule):
+    def __init__(self, identifier, postfix, condition=None):
         self.postfix = postfix
+        ConditionalRule.__init__(self, identifier,
+                                 'does not have postfix "' + postfix + '"',
+                                 'has redundant postfix "' + postfix + '"',
+                                 lambda n: n.endswith(self.postfix),
+                                 condition)
 
-    def test(self, node):
-        return node.spelling.endswith(self.postfix)
 
-
-class PreFixRule(Rule):
-    def __init__(self, identifier, prefix):
-        Rule.__init__(self, identifier,
-                      'does not have prefix "' + prefix + '"')
+class PreFixRule(ConditionalRule):
+    def __init__(self, identifier, prefix, condition=None):
         self.prefix = prefix
-
-    def test(self, node):
-        return node.spelling.startswith(self.prefix)
+        ConditionalRule.__init__(self, identifier,
+                                 'does not have prefix "' + prefix + '"',
+                                 'has redundant prefix "' + prefix + '"',
+                                 lambda n: n.startswith(self.prefix),
+                                 condition)
 
 
 def is_camel_case(name):

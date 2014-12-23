@@ -112,6 +112,50 @@ def test_noticing_rule_success():
     assert True == rules.Rule('', '', test).test(_Node(name=''))
 
 
+def test_construction_of_conditional_rule():
+    test = MagicMock()
+    condition = MagicMock()
+    rule = rules.ConditionalRule('identifier', 'original', 'inverted', test,
+                                 condition)
+    assert rule.type_name == 'identifier'
+    assert rule.rule_test == test
+    assert rule.original_description == 'original'
+    assert rule.inverted_description == 'inverted'
+    assert rule.condition == condition
+
+
+def test_conditional_rule_test_is_not_inverted_by_default():
+    test = MagicMock(return_value=True)
+    rule = rules.ConditionalRule('', '', '', test)
+    assert True == rule.test(_Node(name=''))
+
+
+def test_conditional_rule_test_is_not_inverted_with_true_condition():
+    test = MagicMock(return_value=True)
+    rule = rules.ConditionalRule('', '', '', test, lambda _: True)
+    assert True == rule.test(_Node(name=''))
+
+
+def test_conditional_rule_test_is_inverted_with_false_condition():
+    test = MagicMock(return_value=True)
+    rule = rules.ConditionalRule('', '', '', test, lambda _: False)
+    assert False == rule.test(_Node(name=''))
+
+
+def test_conditional_rule_uses_original_description_for_true_condition():
+    test = MagicMock(return_value=True)
+    rule = rules.ConditionalRule('', 'original', '', test, lambda _: True)
+    rule.test(_Node(name=''))
+    assert 'original' == rule.error_description
+
+
+def test_conditional_rule_uses_inverted_description_for_false_condition():
+    test = MagicMock(return_value=True)
+    rule = rules.ConditionalRule('', '', 'inverted', test, lambda _: False)
+    rule.test(_Node(name=''))
+    assert 'inverted' == rule.error_description
+
+
 def test_construction_of_partial_check_rule():
     rule = rules.PartialCheckRule('', '', MagicMock(), 12, 34)
     assert 12 == rule.prefix_size
@@ -144,9 +188,14 @@ def test_construction_of_headless_camel_case_rule():
     assert 1234 == rule.postfix_size
 
 
-def test_construction_of_post_fix_rule():
-    rule = rules.PostFixRule('identifier', 'postfix')
+def test_construction_of_postfix_rule():
+    rule = rules.PostFixRule('identifier', 'postfix', MagicMock())
     assert rule.postfix == 'postfix'
+
+
+def test_construction_of_prefix_rule():
+    rule = rules.PreFixRule('identifier', 'prefix', MagicMock())
+    assert rule.prefix == 'prefix'
 
 
 def test_missing_postfix_is_failure():
