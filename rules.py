@@ -24,6 +24,7 @@
 
 import case_rules
 import identification
+import affixed_name_rule
 
 
 def identify_rules(node):
@@ -50,18 +51,11 @@ def identify_rules_for_class(node):
 
 
 def identify_rules_for_variables(node):
-    result = []
-    postfix_size = 0
-    prefix_size = 0
-    if identification.is_member(node):
-        result.append(PostFixRule('member variable', 'M'))
-        postfix_size = 1
-    if identification.is_reference(node):
-        prefix_size = 1
-    result.append(PreFixRule('reference variable', 'r',
-                             identification.is_reference))
-    result.append(identify_case_rule(node, prefix_size, postfix_size))
-    return result
+    result = affixed_name_rule.AffixedNameRule()
+    result.add_prefix_rule('reference variable', 'r',
+                           identification.is_reference)
+    result.add_postfix_rule('member variable', 'M', identification.is_member)
+    return [result]
 
 
 def identify_case_rule(node, prefix_size, postfix_size):

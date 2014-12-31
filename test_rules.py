@@ -23,9 +23,11 @@
 # DEALINGS IN THE SOFTWARE.
 
 from clang.cindex import CursorKind, TypeKind
+import affixed_name_rule
+import identification
 import rules
 import pytest
-from mock import MagicMock
+from mock import MagicMock, patch
 
 
 def test_unidentified_node_will_have_no_rules(identify_rules_tester):
@@ -37,11 +39,6 @@ def test_namespace_should_have_camel_case_rule(identify_rules_tester):
     assert rules.CamelCaseRule in _rule_types(result)
 
 
-def test_variable_should_have_headless_camel_case_rule(identify_rules_tester):
-    result = identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
-    assert rules.HeadlessCamelCaseRule in _rule_types(result)
-
-
 def test_method_should_have_headless_camel_case_rule(identify_rules_tester):
     result = identify_rules_tester.with_kind(CursorKind.CXX_METHOD).test()
     assert rules.HeadlessCamelCaseRule in _rule_types(result)
@@ -50,28 +47,6 @@ def test_method_should_have_headless_camel_case_rule(identify_rules_tester):
 def test_function_should_have_headless_camel_case_rule(identify_rules_tester):
     result = identify_rules_tester.with_kind(CursorKind.FUNCTION_DECL).test()
     assert rules.HeadlessCamelCaseRule in _rule_types(result)
-
-
-def test_member_variable_should_have_headless_camel_case_rule(
-        identify_rules_tester):
-    result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
-    assert _rule_of_type(result, rules.HeadlessCamelCaseRule).postfix_size == 1
-
-
-def test_member_variable_should_have_postfix_m_rule(
-        identify_rules_tester):
-    result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
-    assert _rule_of_type(result, rules.PostFixRule).postfix == 'M'
-
-
-def test_reference_variable_should_have_prefix_r_rule(identify_rules_tester):
-    result = identify_rules_tester.with_reference_variable().test()
-    assert _rule_of_type(result, rules.PreFixRule).prefix == 'r'
-
-
-def test_reference_member_should_have_camel_case_rule(identify_rules_tester):
-    result = identify_rules_tester.with_reference_member().test()
-    assert _rule_of_type(result, rules.CamelCaseRule).prefix_size == 1
 
 
 def test_class_should_have_camel_case_rule(identify_rules_tester):
@@ -92,6 +67,30 @@ def test_interface_class_should_have_if_postfix(identify_rules_tester):
 def test_identifying_class():
     result = rules.identify_rules_for_class(_Node(CursorKind.CLASS_DECL))
     assert rules.CamelCaseRule in _rule_types(result)
+
+
+def test_variable_should_have_affixed_name_rule(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
+    assert affixed_name_rule.AffixedNameRule in _rule_types(result)
+
+
+def test_member_variable_should_have_affixed_name_rule(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
+    assert affixed_name_rule.AffixedNameRule in _rule_types(result)
+
+
+def test_m_postfix_rule_for_member_variables(identify_rules_tester,
+                                             affixed_rule):
+    identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
+    affixed_rule.add_postfix_rule.assert_any_call(
+        'member variable', 'M', identification.is_member)
+
+
+def test_m_prefix_rule_for_reference_variables(identify_rules_tester,
+                                               affixed_rule):
+    identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
+    affixed_rule.add_prefix_rule.assert_any_call(
+        'reference variable', 'r', identification.is_reference)
 
 
 def test_construction_of_rule():
@@ -207,6 +206,16 @@ def test_existing_postfix_is_success():
 @pytest.fixture
 def identify_rules_tester():
     return _IdentifyRulesTester()
+
+
+@pytest.fixture
+def affixed_rule(request):
+    patcher = patch('affixed_name_rule.AffixedNameRule', autospec=True)
+    constructor = patcher.start()
+    result = MagicMock()
+    constructor.return_value = result
+    request.addfinalizer(patch.stopall)
+    return result
 
 
 class _Node:

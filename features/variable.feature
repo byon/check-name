@@ -11,8 +11,9 @@ Scenario Outline: Succeeding analysis
   |           | aVariable         |
   |           | headlessCamelCase |
   | reference | rVariable         |
+  |           | roundAbout        |
+  |           | peterPiper        |
 
-  @wip
   Scenario Outline: Failing analysis
     Given source with <type> variable "<name>"
     When analysis is made
@@ -47,4 +48,4 @@ Scenario Outline: Succeeding analysis
   | abc        |           | postfix "M"       |
   | variableM  | reference | prefix "r"        |
   | rvariable  | reference | postfix "M"       |
-  | rvariableM | reference | CamelCase         |
+  | rvariableM | reference | prefix "r"        |
