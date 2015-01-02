@@ -22,7 +22,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import re
+import case_rules
 import identification
 
 
@@ -115,14 +115,16 @@ class PartialCheckRule(Rule):
 class CamelCaseRule(PartialCheckRule):
     def __init__(self, identifier, prefix_size=0, postfix_size=0):
         PartialCheckRule.__init__(self, identifier, 'is not in CamelCase',
-                                  is_camel_case, prefix_size, postfix_size)
+                                  case_rules.is_camel_case, prefix_size,
+                                  postfix_size)
 
 
 class HeadlessCamelCaseRule(PartialCheckRule):
     def __init__(self, identifier, postfix_size=0):
         description = 'is not in headlessCamelCase'
         PartialCheckRule.__init__(self, identifier, description,
-                                  is_headless_camel_case, 0, postfix_size)
+                                  case_rules.is_headless_camel_case, 0,
+                                  postfix_size)
 
 
 class PostFixRule(ConditionalRule):
@@ -143,12 +145,3 @@ class PreFixRule(ConditionalRule):
                                  'has redundant prefix "' + prefix + '"',
                                  lambda n: n.startswith(self.prefix),
                                  condition)
-
-
-def is_camel_case(name):
-    return True if re.match('^([A-Z][a-z]+\d*)+$', name) else False
-
-
-def is_headless_camel_case(name):
-    expression = '^[a-z]+\d*([A-Z][a-z]+\d*)*$'
-    return True if re.match(expression, name) else False
