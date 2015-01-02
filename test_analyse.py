@@ -114,26 +114,26 @@ def test_analysis_for_rule_passes_node(analyse_node_for_rule_tester):
 
 
 def test_analysis_for_rule_succeeds(analyse_node_for_rule_tester):
-    analyse_node_for_rule_tester.with_result(True).test()
+    analyse_node_for_rule_tester.test()
     assert 0 == analyse_node_for_rule_tester.output.rule_violation.call_count
 
 
 def test_analysis_for_rule_fails(analyse_node_for_rule_tester):
-    analyse_node_for_rule_tester.with_result(False).test()
+    analyse_node_for_rule_tester.with_result('type', 'name', 'description')
+    analyse_node_for_rule_tester.test()
     method = analyse_node_for_rule_tester.output.rule_violation
     location = analyse_node_for_rule_tester.node.location
-    name = analyse_node_for_rule_tester.node.spelling
-    method.assert_called_once_with(location, 'type name', name,
-                                   'error description')
+    method.assert_called_once_with(location, 'type', 'name', 'description')
 
 
 def test_rule_failure_has_several_reasons(analyse_node_for_rule_tester):
-    analyse_node_for_rule_tester.with_error_causes(['1', '2']).test()
+    analyse_node_for_rule_tester.with_result('type1', 'name1', 'description1')
+    analyse_node_for_rule_tester.with_result('type2', 'name2', 'description2')
+    analyse_node_for_rule_tester.test()
     method = analyse_node_for_rule_tester.output.rule_violation
     location = analyse_node_for_rule_tester.node.location
-    name = analyse_node_for_rule_tester.node.spelling
-    method.assert_any_call(location, 'type name', name, '1')
-    method.assert_any_call(location, 'type name', name, '2')
+    method.assert_any_call(location, 'type1', 'name1', 'description1')
+    method.assert_any_call(location, 'type2', 'name2', 'description2')
 
 
 @pytest.fixture
@@ -275,17 +275,17 @@ class _AnalyseNodeForRuleTester:
         self.node = _Node('name')
         self.rule = MagicMock(type_name='type name',
                               errors=['error description'])
-        self.with_result(True)
+        self.rule.test.return_value = []
         self.output = MagicMock()
 
     def test(self):
         return analyse.analyse_node_for_rule(self.output, self.node, self.rule)
 
-    def with_result(self, result):
-        self.rule.test.return_value = result
-        return self
-
-    def with_error_causes(self, causes):
-        self.with_result(False)
-        self.rule.errors = causes
+    def with_result(self, type, name, description):
+        class Error:
+            def __init__(self, type, name, description):
+                self.type_name = type
+                self.failed_name = name
+                self.error_description = description
+        self.rule.test.return_value.append(Error(type, name, description))
         return self

@@ -98,18 +98,18 @@ def test_construction_of_rule():
     test = MagicMock()
     rule = rules.Rule('identifier', 'description', test)
     assert rule.type_name == 'identifier'
-    assert rule.errors == ['description']
     assert rule.rule_test == test
 
 
 def test_noticing_rule_failure():
     test = MagicMock(return_value=False)
-    assert False == rules.Rule('', '', test).test(_Node(name=''))
+    expected = [rules.Error('id', 'name', 'error')]
+    assert expected == rules.Rule('id', 'error', test).test(_Node(name='name'))
 
 
 def test_noticing_rule_success():
     test = MagicMock(return_value=True)
-    assert True == rules.Rule('', '', test).test(_Node(name=''))
+    assert [] == rules.Rule('', '', test).test(_Node(name=''))
 
 
 def test_construction_of_conditional_rule():
@@ -127,33 +127,25 @@ def test_construction_of_conditional_rule():
 def test_conditional_rule_test_is_not_inverted_by_default():
     test = MagicMock(return_value=True)
     rule = rules.ConditionalRule('', '', '', test)
-    assert True == rule.test(_Node(name=''))
+    assert [] == rule.test(_Node(name=''))
 
 
 def test_conditional_rule_test_is_not_inverted_with_true_condition():
     test = MagicMock(return_value=True)
     rule = rules.ConditionalRule('', '', '', test, lambda _: True)
-    assert True == rule.test(_Node(name=''))
+    assert [] == rule.test(_Node(name=''))
 
 
-def test_conditional_rule_test_is_inverted_with_false_condition():
-    test = MagicMock(return_value=True)
-    rule = rules.ConditionalRule('', '', '', test, lambda _: False)
-    assert False == rule.test(_Node(name=''))
-
-
-def test_conditional_rule_uses_original_description_for_true_condition():
-    test = MagicMock(return_value=True)
+def test_conditional_rule_uses_original_description_with_true_condition():
+    test = MagicMock(return_value=False)
     rule = rules.ConditionalRule('', 'original', '', test, lambda _: True)
-    rule.test(_Node(name=''))
-    assert ['original'] == rule.errors
+    assert [rules.Error('', '', 'original')] == rule.test(_Node(name=''))
 
 
 def test_conditional_rule_uses_inverted_description_for_false_condition():
     test = MagicMock(return_value=True)
     rule = rules.ConditionalRule('', '', 'inverted', test, lambda _: False)
-    rule.test(_Node(name=''))
-    assert ['inverted'] == rule.errors
+    assert [rules.Error('', '', 'inverted')] == rule.test(_Node(name=''))
 
 
 def test_construction_of_partial_check_rule():
@@ -169,7 +161,7 @@ def test_partial_check_rule_will_not_check_pre_and_post_fixes():
     test.assert_called_once_with('Content')
 
 
-def test_partial_check_rule_will_whole_content_when_sizes_are_zero():
+def test_partial_check_rule_will_check_whole_content_when_sizes_are_zero():
     test = MagicMock()
     rule = rules.PartialCheckRule('', '', test, 0, 0)
     rule.test(_Node(name='preContentPost'))
@@ -199,15 +191,17 @@ def test_construction_of_prefix_rule():
 
 
 def test_missing_postfix_is_failure():
-    assert False == rules.PostFixRule('', 'P').test(_Node(name='name'))
+    expected = [rules.Error('id', 'name', 'does not have postfix "P"')]
+    assert expected == rules.PostFixRule('id', 'P').test(_Node(name='name'))
 
 
 def test_postfix_in_middle_is_failure():
-    assert False == rules.PostFixRule('', 'P').test(_Node(name='naPme'))
+    expected = [rules.Error('id', 'naPme', 'does not have postfix "P"')]
+    assert expected == rules.PostFixRule('id', 'P').test(_Node(name='naPme'))
 
 
 def test_existing_postfix_is_success():
-    assert True == rules.PostFixRule('', 'P').test(_Node(name='nameP'))
+    assert [] == rules.PostFixRule('', 'P').test(_Node(name='nameP'))
 
 
 @pytest.fixture

@@ -70,14 +70,31 @@ def identify_case_rule(node, prefix_size, postfix_size):
     return HeadlessCamelCaseRule('variable', postfix_size)
 
 
+class Error:
+    def __init__(self, type_name, failed_name, error_description):
+        self.type_name = type_name
+        self.failed_name = failed_name
+        self.error_description = error_description
+
+    def __eq__(self, other):
+        return (self.type_name == other.type_name and
+                self.failed_name == other.failed_name and
+                self.error_description == other.error_description)
+
+    def __repr__(self):
+        return str([self.type_name, self.failed_name, self.error_description])
+
+
 class Rule:
     def __init__(self, type_name, error_description, rule_test=None):
         self.type_name = type_name
-        self.errors = [error_description]
+        self.error_description = error_description
         self.rule_test = rule_test
 
     def test(self, node):
-        return self.rule_test(node.spelling)
+        if self.rule_test(node.spelling):
+            return []
+        return [Error(self.type_name, node.spelling, self.error_description)]
 
 
 class ConditionalRule(Rule):
@@ -90,10 +107,15 @@ class ConditionalRule(Rule):
 
     def test(self, node):
         result = self.rule_test(node.spelling)
-        if self._should_invert_result(node):
-            self.errors = [self.inverted_description]
-            return not result
-        return result
+        if result:
+            if self._should_invert_result(node):
+                return [Error(self.type_name, node.spelling,
+                              self.inverted_description)]
+        else:
+            if not self._should_invert_result(node):
+                return [Error(self.type_name, node.spelling,
+                              self.original_description)]
+        return []
 
     def _should_invert_result(self, node):
         return self.condition and not self.condition(node)
@@ -109,7 +131,9 @@ class PartialCheckRule(Rule):
     def test(self, node):
         end = -self.postfix_size if self.postfix_size > 0 else None
         part_to_check = node.spelling[self.prefix_size:end]
-        return self.rule_test(part_to_check)
+        if self.rule_test(part_to_check):
+            return []
+        return [Error(self.type_name, node.spelling, self.error_description)]
 
 
 class CamelCaseRule(PartialCheckRule):
