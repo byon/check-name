@@ -24,6 +24,7 @@
 
 from clang.cindex import CursorKind, TypeKind
 import affixed_name_rule
+import case_rules
 import identification
 import rules
 import pytest
@@ -111,92 +112,30 @@ def test_noticing_rule_success():
     assert [] == rules.Rule('', '', test).test(_Node(name=''))
 
 
-def test_construction_of_conditional_rule():
-    test = MagicMock()
-    condition = MagicMock()
-    rule = rules.ConditionalRule('identifier', 'original', 'inverted', test,
-                                 condition)
-    assert rule.type_name == 'identifier'
-    assert rule.rule_test == test
-    assert rule.original_description == 'original'
-    assert rule.inverted_description == 'inverted'
-    assert rule.condition == condition
-
-
-def test_conditional_rule_test_is_not_inverted_by_default():
-    test = MagicMock(return_value=True)
-    rule = rules.ConditionalRule('', '', '', test)
-    assert [] == rule.test(_Node(name=''))
-
-
-def test_conditional_rule_test_is_not_inverted_with_true_condition():
-    test = MagicMock(return_value=True)
-    rule = rules.ConditionalRule('', '', '', test, lambda _: True)
-    assert [] == rule.test(_Node(name=''))
-
-
-def test_conditional_rule_uses_original_description_with_true_condition():
-    test = MagicMock(return_value=False)
-    rule = rules.ConditionalRule('', 'original', '', test, lambda _: True)
-    assert [rules.Error('', '', 'original')] == rule.test(_Node(name=''))
-
-
-def test_conditional_rule_uses_inverted_description_for_false_condition():
-    test = MagicMock(return_value=True)
-    rule = rules.ConditionalRule('', '', 'inverted', test, lambda _: False)
-    assert [rules.Error('', '', 'inverted')] == rule.test(_Node(name=''))
-
-
-def test_construction_of_partial_check_rule():
-    rule = rules.PartialCheckRule('', '', MagicMock(), 12, 34)
-    assert 12 == rule.prefix_size
-    assert 34 == rule.postfix_size
-
-
-def test_partial_check_rule_will_not_check_pre_and_post_fixes():
-    test = MagicMock()
-    rule = rules.PartialCheckRule('', '', test, 3, 4)
-    rule.test(_Node(name='preContentPost'))
-    test.assert_called_once_with('Content')
-
-
-def test_partial_check_rule_will_check_whole_content_when_sizes_are_zero():
-    test = MagicMock()
-    rule = rules.PartialCheckRule('', '', test, 0, 0)
-    rule.test(_Node(name='preContentPost'))
-    test.assert_called_once_with('preContentPost')
-
-
 def test_construction_of_camel_case_rule():
-    rule = rules.CamelCaseRule('identifier', 4321, 1234)
-    assert 4321 == rule.prefix_size
-    assert 1234 == rule.postfix_size
+    rule = rules.CamelCaseRule('identifier')
+    assert rule.error_description == 'is not in CamelCase'
+    assert rule.rule_test == case_rules.is_camel_case
 
 
 def test_construction_of_headless_camel_case_rule():
-    rule = rules.HeadlessCamelCaseRule('identifier', 1234)
-    assert 0 == rule.prefix_size
-    assert 1234 == rule.postfix_size
+    rule = rules.HeadlessCamelCaseRule('identifier')
+    assert rule.error_description == 'is not in headlessCamelCase'
+    assert rule.rule_test == case_rules.is_headless_camel_case
 
 
 def test_construction_of_postfix_rule():
-    rule = rules.PostFixRule('identifier', 'postfix', MagicMock())
+    rule = rules.PostFixRule('identifier', 'postfix')
     assert rule.postfix == 'postfix'
-
-
-def test_construction_of_prefix_rule():
-    rule = rules.PreFixRule('identifier', 'prefix', MagicMock())
-    assert rule.prefix == 'prefix'
+    assert rule.error_description == 'does not have postfix "postfix"'
 
 
 def test_missing_postfix_is_failure():
-    expected = [rules.Error('id', 'name', 'does not have postfix "P"')]
-    assert expected == rules.PostFixRule('id', 'P').test(_Node(name='name'))
+    assert len(rules.PostFixRule('id', 'P').test(_Node(name='name'))) > 0
 
 
 def test_postfix_in_middle_is_failure():
-    expected = [rules.Error('id', 'naPme', 'does not have postfix "P"')]
-    assert expected == rules.PostFixRule('id', 'P').test(_Node(name='naPme'))
+    assert len(rules.PostFixRule('id', 'P').test(_Node(name='naPme'))) > 0
 
 
 def test_existing_postfix_is_success():

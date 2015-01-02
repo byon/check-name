@@ -91,75 +91,22 @@ class Rule:
         return [Error(self.type_name, node.spelling, self.error_description)]
 
 
-class ConditionalRule(Rule):
-    def __init__(self, type_name, original_description, inverted_description,
-                 rule_test, condition=None):
-        Rule.__init__(self, type_name, original_description, rule_test)
-        self.original_description = original_description
-        self.inverted_description = inverted_description
-        self.condition = condition
-
-    def test(self, node):
-        result = self.rule_test(node.spelling)
-        if result:
-            if self._should_invert_result(node):
-                return [Error(self.type_name, node.spelling,
-                              self.inverted_description)]
-        else:
-            if not self._should_invert_result(node):
-                return [Error(self.type_name, node.spelling,
-                              self.original_description)]
-        return []
-
-    def _should_invert_result(self, node):
-        return self.condition and not self.condition(node)
-
-
-class PartialCheckRule(Rule):
-    def __init__(self, type_name, error_description, rule_test,
-                 prefix_size, postfix_size):
-        Rule.__init__(self, type_name, error_description, rule_test)
-        self.prefix_size = prefix_size
-        self.postfix_size = postfix_size
-
-    def test(self, node):
-        end = -self.postfix_size if self.postfix_size > 0 else None
-        part_to_check = node.spelling[self.prefix_size:end]
-        if self.rule_test(part_to_check):
-            return []
-        return [Error(self.type_name, node.spelling, self.error_description)]
-
-
-class CamelCaseRule(PartialCheckRule):
+class CamelCaseRule(Rule):
     def __init__(self, identifier, prefix_size=0, postfix_size=0):
-        PartialCheckRule.__init__(self, identifier, 'is not in CamelCase',
-                                  case_rules.is_camel_case, prefix_size,
-                                  postfix_size)
+        Rule.__init__(self, identifier, 'is not in CamelCase',
+                      case_rules.is_camel_case)
 
 
-class HeadlessCamelCaseRule(PartialCheckRule):
-    def __init__(self, identifier, postfix_size=0):
+class HeadlessCamelCaseRule(Rule):
+    def __init__(self, identifier):
         description = 'is not in headlessCamelCase'
-        PartialCheckRule.__init__(self, identifier, description,
-                                  case_rules.is_headless_camel_case, 0,
-                                  postfix_size)
+        Rule.__init__(self, identifier, description,
+                      case_rules.is_headless_camel_case)
 
 
-class PostFixRule(ConditionalRule):
-    def __init__(self, identifier, postfix, condition=None):
+class PostFixRule(Rule):
+    def __init__(self, identifier, postfix):
         self.postfix = postfix
-        ConditionalRule.__init__(self, identifier,
-                                 'does not have postfix "' + postfix + '"',
-                                 'has redundant postfix "' + postfix + '"',
-                                 lambda n: n.endswith(self.postfix),
-                                 condition)
-
-
-class PreFixRule(ConditionalRule):
-    def __init__(self, identifier, prefix, condition=None):
-        self.prefix = prefix
-        ConditionalRule.__init__(self, identifier,
-                                 'does not have prefix "' + prefix + '"',
-                                 'has redundant prefix "' + prefix + '"',
-                                 lambda n: n.startswith(self.prefix),
-                                 condition)
+        Rule.__init__(self, identifier,
+                      'does not have postfix "' + postfix + '"',
+                      lambda n: n.endswith(self.postfix))
