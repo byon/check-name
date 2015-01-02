@@ -121,10 +121,19 @@ def test_analysis_for_rule_succeeds(analyse_node_for_rule_tester):
 def test_analysis_for_rule_fails(analyse_node_for_rule_tester):
     analyse_node_for_rule_tester.with_result(False).test()
     method = analyse_node_for_rule_tester.output.rule_violation
-    method.assert_called_once_with(analyse_node_for_rule_tester.node.location,
-                                   'type name',
-                                   analyse_node_for_rule_tester.node.spelling,
+    location = analyse_node_for_rule_tester.node.location
+    name = analyse_node_for_rule_tester.node.spelling
+    method.assert_called_once_with(location, 'type name', name,
                                    'error description')
+
+
+def test_rule_failure_has_several_reasons(analyse_node_for_rule_tester):
+    analyse_node_for_rule_tester.with_error_causes(['1', '2']).test()
+    method = analyse_node_for_rule_tester.output.rule_violation
+    location = analyse_node_for_rule_tester.node.location
+    name = analyse_node_for_rule_tester.node.spelling
+    method.assert_any_call(location, 'type name', name, '1')
+    method.assert_any_call(location, 'type name', name, '2')
 
 
 @pytest.fixture
@@ -265,7 +274,7 @@ class _AnalyseNodeForRuleTester:
     def __init__(self):
         self.node = _Node('name')
         self.rule = MagicMock(type_name='type name',
-                              error_description='error description')
+                              errors=['error description'])
         self.with_result(True)
         self.output = MagicMock()
 
@@ -274,4 +283,9 @@ class _AnalyseNodeForRuleTester:
 
     def with_result(self, result):
         self.rule.test.return_value = result
+        return self
+
+    def with_error_causes(self, causes):
+        self.with_result(False)
+        self.rule.errors = causes
         return self

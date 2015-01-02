@@ -72,7 +72,7 @@ def identify_case_rule(node, prefix_size, postfix_size):
 class Rule:
     def __init__(self, type_name, error_description, rule_test=None):
         self.type_name = type_name
-        self.error_description = error_description
+        self.errors = [error_description]
         self.rule_test = rule_test
 
     def test(self, node):
@@ -90,7 +90,7 @@ class ConditionalRule(Rule):
     def test(self, node):
         result = self.rule_test(node.spelling)
         if self._should_invert_result(node):
-            self.error_description = self.inverted_description
+            self.errors = [self.inverted_description]
             return not result
         return result
 

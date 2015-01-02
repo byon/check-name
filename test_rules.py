@@ -98,7 +98,7 @@ def test_construction_of_rule():
     test = MagicMock()
     rule = rules.Rule('identifier', 'description', test)
     assert rule.type_name == 'identifier'
-    assert rule.error_description == 'description'
+    assert rule.errors == ['description']
     assert rule.rule_test == test
 
 
@@ -146,14 +146,14 @@ def test_conditional_rule_uses_original_description_for_true_condition():
     test = MagicMock(return_value=True)
     rule = rules.ConditionalRule('', 'original', '', test, lambda _: True)
     rule.test(_Node(name=''))
-    assert 'original' == rule.error_description
+    assert ['original'] == rule.errors
 
 
 def test_conditional_rule_uses_inverted_description_for_false_condition():
     test = MagicMock(return_value=True)
     rule = rules.ConditionalRule('', '', 'inverted', test, lambda _: False)
     rule.test(_Node(name=''))
-    assert 'inverted' == rule.error_description
+    assert ['inverted'] == rule.errors
 
 
 def test_construction_of_partial_check_rule():

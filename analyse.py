@@ -46,6 +46,12 @@ def analyse_node(output, node):
 
 
 def analyse_node_for_rule(output, node, rule):
-    if not rule.test(node):
+    if rule.test(node):
+        return
+    _report_errors(output, node, rule)
+
+
+def _report_errors(output, node, rule):
+    for error in rule.errors:
         output.rule_violation(node.location, rule.type_name, node.spelling,
-                              rule.error_description)
+                              error)
