@@ -22,29 +22,29 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import clang
 import re
+import identification
 
 
 def identify_rules(node):
-    if is_namespace(node):
+    if identification.is_namespace(node):
         return [CamelCaseRule('namespace')]
-    if is_member(node) or is_variable(node):
+    if identification.is_member(node) or identification.is_variable(node):
         return identify_rules_for_variables(node)
-    if is_method(node):
+    if identification.is_method(node):
         return [HeadlessCamelCaseRule('method')]
-    if is_function(node):
+    if identification.is_function(node):
         return [HeadlessCamelCaseRule('function')]
-    if is_class(node):
+    if identification.is_class(node):
         return identify_rules_for_class(node)
-    if is_struct(node):
+    if identification.is_struct(node):
         return [CamelCaseRule('struct')]
     return []
 
 
 def identify_rules_for_class(node):
     result = [CamelCaseRule('class')]
-    if is_interface_class(node):
+    if identification.is_interface_class(node):
         result.append(PostFixRule('interface class', 'If'))
     return result
 
@@ -53,12 +53,13 @@ def identify_rules_for_variables(node):
     result = []
     postfix_size = 0
     prefix_size = 0
-    if is_member(node):
+    if identification.is_member(node):
         result.append(PostFixRule('member variable', 'M'))
         postfix_size = 1
-    if is_reference(node):
+    if identification.is_reference(node):
         prefix_size = 1
-    result.append(PreFixRule('reference variable', 'r', is_reference))
+    result.append(PreFixRule('reference variable', 'r',
+                             identification.is_reference))
     result.append(identify_case_rule(node, prefix_size, postfix_size))
     return result
 
@@ -151,42 +152,3 @@ def is_camel_case(name):
 def is_headless_camel_case(name):
     expression = '^[a-z]+\d*([A-Z][a-z]+\d*)*$'
     return True if re.match(expression, name) else False
-
-
-def is_class(node):
-    return clang.cindex.CursorKind.CLASS_DECL == node.kind
-
-
-def is_interface_class(node):
-    for method in [c for c in node.get_children() if is_method(c)]:
-        if method.is_pure_virtual_method():
-            return True
-    return False
-
-
-def is_function(node):
-    return clang.cindex.CursorKind.FUNCTION_DECL == node.kind
-
-
-def is_member(node):
-    return clang.cindex.CursorKind.FIELD_DECL == node.kind
-
-
-def is_method(node):
-    return clang.cindex.CursorKind.CXX_METHOD == node.kind
-
-
-def is_namespace(node):
-    return clang.cindex.CursorKind.NAMESPACE == node.kind
-
-
-def is_struct(node):
-    return clang.cindex.CursorKind.STRUCT_DECL == node.kind
-
-
-def is_variable(node):
-    return clang.cindex.CursorKind.VAR_DECL == node.kind
-
-
-def is_reference(node):
-    return clang.cindex.TypeKind.LVALUEREFERENCE == node.type.kind
