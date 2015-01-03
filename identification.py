@@ -69,7 +69,8 @@ def is_pointer(node):
 
 
 def is_non_array_pointer(node):
-    return clang.cindex.TypeKind.POINTER == node.type.kind
+    return (clang.cindex.TypeKind.POINTER == node.type.kind or
+            clang.cindex.TypeKind.MEMBERPOINTER == node.type.kind)
 
 
 def is_array_pointer(node):
