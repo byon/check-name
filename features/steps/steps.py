@@ -168,7 +168,8 @@ def _mandatory_options(path):
 
 
 def _identify_type(name):
-    type_map = {'class': ast.Class,
+    type_map = {'array_variable': ast.ArrayVariable,
+                'class': ast.Class,
                 'function': ast.Function,
                 'method': ast.Method,
                 'namespace': ast.Namespace,

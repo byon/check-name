@@ -66,3 +66,11 @@ def is_reference(node):
 
 def is_pointer(node):
     return clang.cindex.TypeKind.POINTER == node.type.kind
+
+
+def is_array(node):
+    type = node.type.kind
+    return (type == clang.cindex.TypeKind.CONSTANTARRAY or
+            type == clang.cindex.TypeKind.INCOMPLETEARRAY or
+            type == clang.cindex.TypeKind.VARIABLEARRAY or
+            type == clang.cindex.TypeKind.DEPENDENTSIZEDARRAY)

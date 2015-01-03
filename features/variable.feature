@@ -8,12 +8,13 @@ Scenario Outline: Succeeding analysis
   Examples: Names that follow the rules
   | type      | name              |
   |           | variable          |
-  |           | aVariable         |
   |           | headlessCamelCase |
   | reference | rVariable         |
   |           | roundAbout        |
   |           | peterPiper        |
+  |           | arrhythmia        |
   | pointer   | pVariable         |
+  | array     | aVariable         |
 
   Scenario Outline: Failing analysis
     Given source with <type> variable "<name>"
@@ -27,6 +28,8 @@ Scenario Outline: Succeeding analysis
   | rFoo |           | redundant prefix "r" |
   | foo  | pointer   | prefix "p"           |
   | pFoo |           | redundant prefix "p" |
+  | foo  | array     | prefix "a"           |
+  | aFoo |           | redundant prefix "a" |
 
   Scenario Outline: Succeeding member variable analysis
     Given source with class "Class"
@@ -39,6 +42,7 @@ Scenario Outline: Succeeding analysis
   |           | variableM  |
   | reference | rVariableM |
   | pointer   | pVariableM |
+  | array     | aVariableM |
 
   Scenario Outline: Failing member variable analysis
     Given source with class "Class"
@@ -55,3 +59,5 @@ Scenario Outline: Succeeding analysis
   | rvariableM | reference | prefix "r"           |
   | variableM  | pointer   | prefix "p"           |
   | pVariableM |           | redundant prefix "p" |
+  | variableM  | array     | prefix "a"           |
+  | aVariableM |           | redundant prefix "a" |

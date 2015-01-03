@@ -101,6 +101,13 @@ def test_p_prefix_rule_for_pointer_variables(identify_rules_tester,
         'pointer variable', 'p', identification.is_pointer)
 
 
+def test_a_prefix_rule_for_array_variables(identify_rules_tester,
+                                           affixed_rule):
+    identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
+    affixed_rule.add_prefix_rule.assert_any_call(
+        'array variable', 'a', identification.is_array)
+
+
 def test_construction_of_rule():
     test = MagicMock()
     rule = rules.Rule('identifier', 'description', test)
