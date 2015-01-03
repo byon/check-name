@@ -30,7 +30,7 @@ class AffixedNameRule:
 
     class AffixRule:
         def __init__(self, type_name, affix_type, identifier, condition):
-            self.type_name = type_name
+            self._type_name = type_name
             self.affix_type = affix_type
             self.identifier = identifier
             self.condition = condition
@@ -47,6 +47,11 @@ class AffixedNameRule:
                 problem = 'has redundant'
             return '{} {} "{}"'.format(problem, self.affix_type,
                                        self.identifier)
+
+        def type_name(self, node):
+            if self.condition(node):
+                return self._type_name
+            return 'non-' + self._type_name
 
     def __init__(self):
         self.errors = []
@@ -78,7 +83,7 @@ class AffixedNameRule:
         for affix_rule in affixes:
             if not affix_rule.test(node, affix):
                 self._add_error(node, affix_rule.error_description(node),
-                                affix_rule.type_name)
+                                affix_rule.type_name(node))
         return len(affix)
 
     def _test_name(self, node, prefix_size, postfix_size):

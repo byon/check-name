@@ -38,7 +38,7 @@ def test_name_without_prefixes_is_not_a_violation(tester):
 
 def test_name_without_expected_prefix_is_a_violation(tester):
     tester.with_expected_prefix('p').test('name')
-    tester.assert_failures_include('missing prefix "p"')
+    tester.assert_missing_failure('missing prefix "p"')
 
 
 def test_name_with_expected_prefix_is_not_a_violation(tester):
@@ -47,12 +47,12 @@ def test_name_with_expected_prefix_is_not_a_violation(tester):
 
 def test_name_with_unexpected_prefix_is_a_violation(tester):
     tester.with_unexpected_prefix('p').test('pName')
-    tester.assert_failures_include('has redundant prefix "p"')
+    tester.assert_redundant_failure('has redundant prefix "p"')
 
 
 def test_name_without_all_expected_prefixes_is_a_violation(tester):
     tester.with_expected_prefix('a').with_expected_prefix('p').test('pName')
-    tester.assert_failures_include('missing prefix "a"')
+    tester.assert_missing_failure('missing prefix "a"')
 
 
 def test_name_with_all_expected_prefixes_is_not_a_violation(tester):
@@ -63,18 +63,18 @@ def test_name_with_all_expected_prefixes_is_not_a_violation(tester):
 def test_all_violations_with_redundant_prefixes_are_reported(tester):
     tester.with_unexpected_prefix('a').with_unexpected_prefix('p')
     tester.test('apName')
-    tester.assert_failures_include('has redundant prefix "a"')
-    tester.assert_failures_include('has redundant prefix "p"')
+    tester.assert_redundant_failure('has redundant prefix "a"')
+    tester.assert_redundant_failure('has redundant prefix "p"')
 
 
 def test_name_that_happens_to_match_expected_prefix_is_a_violation(tester):
     tester.with_expected_prefix('p').test('pointer')
-    tester.assert_failures_include('missing prefix "p"')
+    tester.assert_missing_failure('missing prefix "p"')
 
 
 def test_only_specified_prefixes_are_allowed(tester):
     tester.with_expected_prefix('p').test('purePointer')
-    tester.assert_failures_include('missing prefix "p"')
+    tester.assert_missing_failure('missing prefix "p"')
 
 
 def test_name_without_prefixes_needs_to_be_headless_camel_case(tester):
@@ -94,7 +94,7 @@ def test_name_with_only_prefix_is_a_violation(tester):
 
 def test_name_without_expected_postfix_is_a_violation(tester):
     tester.with_expected_postfix('M').test('name')
-    tester.assert_failures_include('missing postfix "M"')
+    tester.assert_missing_failure('missing postfix "M"')
 
 
 def test_name_with_expected_postfix_is_not_a_violation(tester):
@@ -103,7 +103,7 @@ def test_name_with_expected_postfix_is_not_a_violation(tester):
 
 def test_name_with_unexpected_postfix_is_a_violation(tester):
     tester.with_unexpected_postfix('M').test('nameM')
-    tester.assert_failures_include('has redundant postfix "M"')
+    tester.assert_redundant_failure('has redundant postfix "M"')
 
 
 def test_name_with_expected_pre_and_postfixes_is_not_a_violation(tester):
@@ -141,8 +141,11 @@ class Tester:
         self.result = self.rule.test(MagicMock(spelling=name_to_test))
         return self.result
 
-    def assert_failures_include(self, expected):
+    def assert_missing_failure(self, expected):
         assert Error('type', self.tested_name, expected) in self.result
+
+    def assert_redundant_failure(self, expected):
+        assert Error('non-type', self.tested_name, expected) in self.result
 
     def assert_generic_failures_include(self, expected):
         assert Error('variable', self.tested_name, expected) in self.result
