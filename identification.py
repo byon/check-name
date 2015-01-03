@@ -62,3 +62,7 @@ def is_variable(node):
 
 def is_reference(node):
     return clang.cindex.TypeKind.LVALUEREFERENCE == node.type.kind
+
+
+def is_pointer(node):
+    return clang.cindex.TypeKind.POINTER == node.type.kind

@@ -52,6 +52,7 @@ def identify_rules_for_class(node):
 
 def identify_rules_for_variables(node):
     result = affixed_name_rule.AffixedNameRule()
+    result.add_prefix_rule('pointer variable', 'p', identification.is_pointer)
     result.add_prefix_rule('reference variable', 'r',
                            identification.is_reference)
     result.add_postfix_rule('member variable', 'M', identification.is_member)

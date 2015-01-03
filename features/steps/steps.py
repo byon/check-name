@@ -172,6 +172,7 @@ def _identify_type(name):
                 'function': ast.Function,
                 'method': ast.Method,
                 'namespace': ast.Namespace,
+                'pointer_variable': ast.PointerVariable,
                 'preprocessor_condition': ast.PreprocessorCondition,
                 'pure_virtual_method': ast.PureVirtualMethod,
                 'struct': ast.Struct,

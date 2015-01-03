@@ -120,6 +120,11 @@ class Variable(_Node):
         _Node.__init__(self, name, type + ' ' + name, assignment + ';\n')
 
 
+class PointerVariable(Variable):
+    def __init__(self, name):
+        Variable.__init__(self, name, 'int*', 0)
+
+
 class ReferenceVariable(Variable):
     def __init__(self, name, referencedVariable=None):
         Variable.__init__(self, name, 'int&', referencedVariable)

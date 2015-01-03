@@ -13,6 +13,7 @@ Scenario Outline: Succeeding analysis
   | reference | rVariable         |
   |           | roundAbout        |
   |           | peterPiper        |
+  | pointer   | pVariable         |
 
   Scenario Outline: Failing analysis
     Given source with <type> variable "<name>"
@@ -24,6 +25,8 @@ Scenario Outline: Succeeding analysis
   | Foo  |           | headlessCamelCase    |
   | foo  | reference | prefix "r"           |
   | rFoo |           | redundant prefix "r" |
+  | foo  | pointer   | prefix "p"           |
+  | pFoo |           | redundant prefix "p" |
 
   Scenario Outline: Succeeding member variable analysis
     Given source with class "Class"
@@ -35,6 +38,7 @@ Scenario Outline: Succeeding analysis
   | type      | name       |
   |           | variableM  |
   | reference | rVariableM |
+  | pointer   | pVariableM |
 
   Scenario Outline: Failing member variable analysis
     Given source with class "Class"
@@ -43,9 +47,11 @@ Scenario Outline: Succeeding analysis
     Then analysis reports "variable" "<name>" as "<rule>" rule violation
 
   Examples: Names that break the rules
-  | name       | type      | rule              |
-  | AbcM       |           | headlessCamelCase |
-  | abc        |           | postfix "M"       |
-  | variableM  | reference | prefix "r"        |
-  | rvariable  | reference | postfix "M"       |
-  | rvariableM | reference | prefix "r"        |
+  | name       | type      | rule                 |
+  | AbcM       |           | headlessCamelCase    |
+  | abc        |           | postfix "M"          |
+  | variableM  | reference | prefix "r"           |
+  | rvariable  | reference | postfix "M"          |
+  | rvariableM | reference | prefix "r"           |
+  | variableM  | pointer   | prefix "p"           |
+  | pVariableM |           | redundant prefix "p" |

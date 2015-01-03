@@ -94,6 +94,13 @@ def test_r_prefix_rule_for_reference_variables(identify_rules_tester,
         'reference variable', 'r', identification.is_reference)
 
 
+def test_p_prefix_rule_for_pointer_variables(identify_rules_tester,
+                                             affixed_rule):
+    identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
+    affixed_rule.add_prefix_rule.assert_any_call(
+        'pointer variable', 'p', identification.is_pointer)
+
+
 def test_construction_of_rule():
     test = MagicMock()
     rule = rules.Rule('identifier', 'description', test)
