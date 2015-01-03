@@ -170,6 +170,7 @@ def _identify_type(name):
     type_map = {'array_variable': ast.ArrayVariable,
                 'class': ast.Class,
                 'function': ast.Function,
+                'interface_class': ast.InterfaceClass,
                 'method': ast.Method,
                 'namespace': ast.Namespace,
                 'pointer_variable': ast.PointerVariable,

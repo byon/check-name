@@ -87,6 +87,12 @@ class Struct(_Node):
         _Node.__init__(self, name, 'struct ' + name + ' {\n', '};\n')
 
 
+class InterfaceClass(Class):
+    def __init__(self, name):
+        Class.__init__(self, name)
+        self.add_child(PureVirtualMethod('pureVirtualMethod'))
+
+
 class PreprocessorCondition(_Node):
     def __init__(self, condition):
         _Node.__init__(self, condition, '#ifdef ' + condition + '\n',
