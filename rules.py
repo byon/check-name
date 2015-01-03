@@ -45,8 +45,8 @@ def identify_rules(node):
 
 def identify_rules_for_class(node):
     result = [CamelCaseRule('class')]
-    if identification.is_interface_class(node):
-        result.append(PostFixRule('interface class', 'If'))
+    result.append(PostFixRule('interface class', 'If',
+                              identification.is_interface_class))
     return result
 
 
@@ -93,6 +93,30 @@ class Rule:
         return [Error(self.type_name, node.spelling, self.error_description)]
 
 
+class ConditionalRule(Rule):
+    def __init__(self, type_name, original_description, inverted_description,
+                 rule_test, condition=None):
+        Rule.__init__(self, type_name, original_description, rule_test)
+        self.original_description = original_description
+        self.inverted_description = inverted_description
+        self.condition = condition
+
+    def test(self, node):
+        result = self.rule_test(node.spelling)
+        if result:
+            if self._should_invert_result(node):
+                return [Error(self.type_name, node.spelling,
+                              self.inverted_description)]
+        else:
+            if not self._should_invert_result(node):
+                return [Error(self.type_name, node.spelling,
+                              self.original_description)]
+        return []
+
+    def _should_invert_result(self, node):
+        return self.condition and not self.condition(node)
+
+
 class CamelCaseRule(Rule):
     def __init__(self, identifier, prefix_size=0, postfix_size=0):
         Rule.__init__(self, identifier, 'is not in CamelCase',
@@ -106,9 +130,11 @@ class HeadlessCamelCaseRule(Rule):
                       case_rules.is_headless_camel_case)
 
 
-class PostFixRule(Rule):
-    def __init__(self, identifier, postfix):
+class PostFixRule(ConditionalRule):
+    def __init__(self, identifier, postfix, condition=None):
         self.postfix = postfix
-        Rule.__init__(self, identifier,
-                      'does not have postfix "' + postfix + '"',
-                      lambda n: n.endswith(self.postfix))
+        ConditionalRule.__init__(self, identifier,
+                                 'does not have postfix "' + postfix + '"',
+                                 'has redundant postfix "' + postfix + '"',
+                                 lambda n: n.endswith(self.postfix),
+                                 condition)

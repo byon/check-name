@@ -17,7 +17,8 @@ Feature: Analysing class names
     Then analysis reports "<type>" "<name>" as "<cause>" rule violation
 
   Examples: Names that fail the rules
-  | type            | name                | cause        |
-  | class           | notInCamelCase      | CamelCase    |
-  | struct          | NeitherISThis       | CamelCase    |
-  | interface class | ThePostFixIsMissing | postfix "If" |
+  | type            | name                | cause                  |
+  | class           | notInCamelCase      | CamelCase              |
+  | struct          | NeitherISThis       | CamelCase              |
+  | interface class | ThePostFixIsMissing | postfix "If"           |
+  | class           | ThereShouldNotBeIf  | redundant postfix "If" |

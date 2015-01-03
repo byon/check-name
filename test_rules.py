@@ -62,7 +62,9 @@ def test_struct_should_have_camel_case_rule(identify_rules_tester):
 
 def test_interface_class_should_have_if_postfix(identify_rules_tester):
     result = identify_rules_tester.with_interface_class().test()
-    assert _rule_of_type(result, rules.PostFixRule).postfix == 'If'
+    rule = _rule_of_type(result, rules.PostFixRule)
+    assert rule.postfix == 'If'
+    assert rule.condition == identification.is_interface_class
 
 
 def test_identifying_class():
@@ -126,6 +128,42 @@ def test_noticing_rule_success():
     assert [] == rules.Rule('', '', test).test(_Node(name=''))
 
 
+def test_construction_of_conditional_rule():
+    test = MagicMock()
+    condition = MagicMock()
+    rule = rules.ConditionalRule('identifier', 'original', 'inverted', test,
+                                 condition)
+    assert rule.type_name == 'identifier'
+    assert rule.rule_test == test
+    assert rule.original_description == 'original'
+    assert rule.inverted_description == 'inverted'
+    assert rule.condition == condition
+
+
+def test_conditional_rule_test_is_not_inverted_by_default():
+    test = MagicMock(return_value=True)
+    rule = rules.ConditionalRule('', '', '', test)
+    assert [] == rule.test(_Node(name=''))
+
+
+def test_conditional_rule_test_is_not_inverted_with_true_condition():
+    test = MagicMock(return_value=True)
+    rule = rules.ConditionalRule('', '', '', test, lambda _: True)
+    assert [] == rule.test(_Node(name=''))
+
+
+def test_conditional_rule_uses_original_description_with_true_condition():
+    test = MagicMock(return_value=False)
+    rule = rules.ConditionalRule('', 'original', '', test, lambda _: True)
+    assert [rules.Error('', '', 'original')] == rule.test(_Node(name=''))
+
+
+def test_conditional_rule_uses_inverted_description_for_false_condition():
+    test = MagicMock(return_value=True)
+    rule = rules.ConditionalRule('', '', 'inverted', test, lambda _: False)
+    assert [rules.Error('', '', 'inverted')] == rule.test(_Node(name=''))
+
+
 def test_construction_of_camel_case_rule():
     rule = rules.CamelCaseRule('identifier')
     assert rule.error_description == 'is not in CamelCase'
@@ -139,7 +177,7 @@ def test_construction_of_headless_camel_case_rule():
 
 
 def test_construction_of_postfix_rule():
-    rule = rules.PostFixRule('identifier', 'postfix')
+    rule = rules.PostFixRule('identifier', 'postfix', MagicMock())
     assert rule.postfix == 'postfix'
     assert rule.error_description == 'does not have postfix "postfix"'
 
