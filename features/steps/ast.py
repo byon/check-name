@@ -125,6 +125,11 @@ class ArrayVariable(_Node):
         _Node.__init__(self, name, 'int ' + name + '[20]', ';\n')
 
 
+class PointerArrayVariable(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'int* ' + name + '[20]', ';\n')
+
+
 class PointerVariable(Variable):
     def __init__(self, name):
         Variable.__init__(self, name, 'int*', 0)

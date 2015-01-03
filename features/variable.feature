@@ -6,15 +6,16 @@ Scenario Outline: Succeeding analysis
     Then analysis should report no rule violations
 
   Examples: Names that follow the rules
-  | type      | name              |
-  |           | variable          |
-  |           | headlessCamelCase |
-  | reference | rVariable         |
-  |           | roundAbout        |
-  |           | peterPiper        |
-  |           | arrhythmia        |
-  | pointer   | pVariable         |
-  | array     | aVariable         |
+  | type          | name              |
+  |               | variable          |
+  |               | headlessCamelCase |
+  | reference     | rVariable         |
+  |               | roundAbout        |
+  |               | peterPiper        |
+  |               | arrhythmia        |
+  | pointer       | pVariable         |
+  | array         | aVariable         |
+  | pointer array | apVariable        |
 
   Scenario Outline: Failing analysis
     Given source with <type> variable "<name>"
@@ -22,14 +23,16 @@ Scenario Outline: Succeeding analysis
     Then analysis reports "<type> variable" "<name>" as "<rule>" rule violation
 
   Examples: Names that break the rules
-  | name | type      | rule                 |
-  | Foo  |           | headlessCamelCase    |
-  | foo  | reference | prefix "r"           |
-  | rFoo |           | redundant prefix "r" |
-  | foo  | pointer   | prefix "p"           |
-  | pFoo |           | redundant prefix "p" |
-  | foo  | array     | prefix "a"           |
-  | aFoo |           | redundant prefix "a" |
+  | name | type          | rule                 |
+  | Foo  |               | headlessCamelCase    |
+  | foo  | reference     | prefix "r"           |
+  | rFoo |               | redundant prefix "r" |
+  | foo  | pointer       | prefix "p"           |
+  | pFoo |               | redundant prefix "p" |
+  | foo  | array         | prefix "a"           |
+  | aFoo |               | redundant prefix "a" |
+  | aFoo | pointer array | prefix "p"           |
+  | pFoo | pointer array | prefix "a"           |
 
   Scenario Outline: Succeeding member variable analysis
     Given source with class "Class"

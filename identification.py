@@ -65,7 +65,16 @@ def is_reference(node):
 
 
 def is_pointer(node):
+    return is_non_array_pointer(node) or is_array_pointer(node)
+
+
+def is_non_array_pointer(node):
     return clang.cindex.TypeKind.POINTER == node.type.kind
+
+
+def is_array_pointer(node):
+    array_type = node.type.get_array_element_type()
+    return array_type.get_pointee().kind is not clang.cindex.TypeKind.INVALID
 
 
 def is_array(node):

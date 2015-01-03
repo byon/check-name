@@ -155,8 +155,7 @@ def analysis_should_report_no_rule_violations(context):
 @then('analysis reports "{type}" "{name}" as "{cause}" rule violation')
 def analysis_reports_rule_violation(context, type, name, cause):
     analysis.check_for_failure(context.result)
-    match_(type.strip() + ' "' + name + '" .*' + cause,
-           context.result.stderr)
+    match_(_expression_for_failure(type, name, cause), context.result.stderr)
 
 
 def _build_command(context, additional_arguments):
@@ -174,9 +173,22 @@ def _identify_type(name):
                 'method': ast.Method,
                 'namespace': ast.Namespace,
                 'pointer_variable': ast.PointerVariable,
+                'pointer_array_variable': ast.PointerArrayVariable,
                 'preprocessor_condition': ast.PreprocessorCondition,
                 'pure_virtual_method': ast.PureVirtualMethod,
                 'struct': ast.Struct,
                 'reference_variable': ast.ReferenceVariable,
                 'variable': ast.Variable}
     return type_map[name.strip().replace(' ', '_').lower()]
+
+
+def _expression_for_failure(type, name, cause):
+    type_expression = _expression_for_type(type)
+    return type_expression + ' "' + name + '" .*' + cause
+
+
+def _expression_for_type(type):
+    stripped = type.strip()
+    if stripped != 'pointer array variable':
+        return stripped
+    return '(pointer|array) variable'
