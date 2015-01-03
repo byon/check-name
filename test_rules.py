@@ -87,7 +87,7 @@ def test_m_postfix_rule_for_member_variables(identify_rules_tester,
         'member variable', 'M', identification.is_member)
 
 
-def test_m_prefix_rule_for_reference_variables(identify_rules_tester,
+def test_r_prefix_rule_for_reference_variables(identify_rules_tester,
                                                affixed_rule):
     identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
     affixed_rule.add_prefix_rule.assert_any_call(
