@@ -16,6 +16,7 @@ Scenario Outline: Succeeding analysis
   | pointer       | pVariable         |
   | array         | aVariable         |
   | pointer array | apVariable        |
+  | smart pointer | pVariable         |
 
   Scenario Outline: Failing analysis
     Given source with <type> variable "<name>"
@@ -33,6 +34,7 @@ Scenario Outline: Succeeding analysis
   | aFoo |               | redundant prefix "a" |
   | aFoo | pointer array | prefix "p"           |
   | pFoo | pointer array | prefix "a"           |
+  | foo  | smart pointer | prefix "p"           |
 
   Scenario Outline: Succeeding member variable analysis
     Given source with class "Class"

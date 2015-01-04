@@ -23,6 +23,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 import clang
+import re
 
 
 def is_class(node):
@@ -65,12 +66,19 @@ def is_reference(node):
 
 
 def is_pointer(node):
-    return is_non_array_pointer(node) or is_array_pointer(node)
+    return (is_pure_pointer(node) or is_smart_pointer(node)
+            or is_array_pointer(node))
 
 
-def is_non_array_pointer(node):
+def is_pure_pointer(node):
     return (clang.cindex.TypeKind.POINTER == node.type.kind or
             clang.cindex.TypeKind.MEMBERPOINTER == node.type.kind)
+
+
+def is_smart_pointer(node):
+    if node.type.kind != clang.cindex.TypeKind.UNEXPOSED:
+        return False
+    return is_name_for_smart_pointer(node.type.spelling)
 
 
 def is_array_pointer(node):
@@ -84,3 +92,9 @@ def is_array(node):
             type == clang.cindex.TypeKind.INCOMPLETEARRAY or
             type == clang.cindex.TypeKind.VARIABLEARRAY or
             type == clang.cindex.TypeKind.DEPENDENTSIZEDARRAY)
+
+
+def is_name_for_smart_pointer(name):
+    if re.compile(r'^(std|boost)::([a-z]+_)ptr').search(name):
+        return True
+    return False

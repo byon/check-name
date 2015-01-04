@@ -163,7 +163,7 @@ def _build_command(context, additional_arguments):
 
 
 def _mandatory_options(path):
-    return ['--llvm_path', LLVM_PATH, '--target', path]
+    return ['--llvm_path', LLVM_PATH, '--target', path, '-std=c++11']
 
 
 def _identify_type(name):
@@ -177,6 +177,7 @@ def _identify_type(name):
                 'pointer_array_variable': ast.PointerArrayVariable,
                 'preprocessor_condition': ast.PreprocessorCondition,
                 'pure_virtual_method': ast.PureVirtualMethod,
+                'smart_pointer_variable': ast.SmartPointerVariable,
                 'struct': ast.Struct,
                 'reference_variable': ast.ReferenceVariable,
                 'variable': ast.Variable}
@@ -190,6 +191,8 @@ def _expression_for_failure(type, name, cause):
 
 def _expression_for_type(type):
     stripped = type.strip()
-    if stripped != 'pointer array variable':
-        return stripped
-    return '(pointer|array) variable'
+    if stripped == 'pointer array variable':
+        return '(pointer|array) variable'
+    if stripped == 'smart pointer variable':
+        return 'pointer variable'
+    return stripped

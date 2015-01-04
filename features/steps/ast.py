@@ -33,16 +33,29 @@ class _Node:
         self.end = end
         self.children = []
         self._open_child = None
+        self.include_statements = set()
 
     def add_child(self, child):
         self.children.append(child)
         self._open_child = child
+
+    def require_include_statement(self, to_include):
+        statement = '#include <' + to_include + '>'
+        self.include_statements.add(statement)
 
     def generate(self):
         result = self.start
         for child in self.children:
             result += child.generate()
         result += self.end
+        return result
+
+    def generate_statements(self):
+        result = ''
+        for statement in self.include_statements:
+            result += statement + '\n'
+        for child in self.children:
+            result += child.generate_statements()
         return result
 
     @property
@@ -65,11 +78,14 @@ class TranslationUnit(_Node):
     def create_file(self):
         _ensure_parent_exists(self.path_in_execution_directory)
         with open(self.path_in_execution_directory, 'w') as file:
-            file.write(self.generate())
+            file.write(self._generate_content())
 
     @property
     def path_in_execution_directory(self):
         return os.path.join(TEST_EXECUTION_DIRECTORY, self.path)
+
+    def _generate_content(self):
+        return self.generate_statements() + self.generate()
 
 
 class Namespace(_Node):
@@ -139,6 +155,12 @@ class PointerArrayVariable(_Node):
 class PointerVariable(Variable):
     def __init__(self, name):
         Variable.__init__(self, name, 'int*', 0)
+
+
+class SmartPointerVariable(Variable):
+    def __init__(self, name):
+        Variable.__init__(self, name, 'std::unique_ptr<int>')
+        self.require_include_statement('memory')
 
 
 class ReferenceVariable(Variable):
