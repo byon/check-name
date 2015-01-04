@@ -31,6 +31,10 @@ def test_without_options_node_should_not_be_filtered(tester):
     assert tester.test('path') is False
 
 
+def test_library_path_should_be_filtered_always(tester):
+    assert tester.test(_create_library_path('path')) is True
+
+
 def test_node_not_in_include_directory_should_be_filtered(tester):
     assert tester.with_include_directory('a').test('b/file.cpp') is True
 
@@ -122,3 +126,13 @@ class _Tester:
         filtering_options = (self.include_directories,
                              self.exclude_directories)
         return filter.should_filter(filtering_options, path)
+
+
+def _create_library_path(path):
+    return os.path.join(_library_root(), path)
+
+
+def _library_root():
+    if os.name == 'posix':
+        return '/usr/lib'
+    assert False, 'Current operating system not yet supported'

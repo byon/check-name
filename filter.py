@@ -27,6 +27,8 @@ import os.path
 
 def should_filter(options, path):
     include_directories, exclude_directories = options
+    if _is_in_directories(path, _library_directories()):
+        return True
     if not include_directories:
         return False
     if not _is_in_directories(path, include_directories):
@@ -49,3 +51,9 @@ def _is_in_directory(path, directory):
 
 def _normalized_path(path):
     return os.path.abspath(path.replace('\\', '/'))
+
+
+def _library_directories():
+    if os.name == 'posix':
+        return ['/usr/lib', '/usr/include']
+    assert False, 'Current operating system not yet supported'

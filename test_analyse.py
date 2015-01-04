@@ -221,7 +221,8 @@ class _Node:
         self.cursor = MagicMock()
         self.cursor.get_children.return_value = iter(self.children)
         self.spelling = name
-        self.location = MagicMock(file=MagicMock(name='File.cpp'))
+        self.location = MagicMock(file=MagicMock())
+        self.location.file.name = 'File.cpp'
         self.kind = MagicMock()
         self.kind.__eq__.side_effect = lambda k: k == kind
         self.kind.is_declaration.return_value = False
