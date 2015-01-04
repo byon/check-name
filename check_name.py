@@ -30,6 +30,7 @@ import report
 
 import argparse
 import sys
+import os.path
 import clang.cindex
 
 
@@ -43,11 +44,11 @@ def main(arguments):
 
 
 def do_analysis(all_options, output):
-    options, clang_options = all_options
+    options, _ = all_options
     clang.cindex.conf.set_library_path(options.llvm_path)
 
     index = clang.cindex.Index.create()
-    translation_unit = index.parse(options.target, clang_options)
+    translation_unit = index.parse(options.target, _clang_options(all_options))
 
     report_diagnostics(output, translation_unit.diagnostics)
 
@@ -99,6 +100,16 @@ def report_diagnostics(output, diagnostics):
 
 def filtering_options(options):
     return (_option_as_list(options.include), _option_as_list(options.exclude))
+
+
+def _clang_options(all_options):
+    options, result = all_options
+    return result + ['-I', _built_in_header_path(options.llvm_path)]
+
+
+def _built_in_header_path(llvm_path):
+    # @todo Find a way to avoid hard-coding the clang version
+    return os.path.join(llvm_path, 'clang/3.6.0/include/')
 
 
 def _option_as_list(option):

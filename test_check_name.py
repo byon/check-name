@@ -41,12 +41,20 @@ def test_analysis_will_create_clang_index(tester):
 
 def test_analysis_will_pass_target_file_to_clang(tester):
     tester.with_target_path('target').test()
-    tester.index.parse.assert_called_once_with('target', [])
+    passed_target = tester.index.parse.call_args[0][0]
+    assert 'target' == passed_target
 
 
 def test_analysis_will_pass_unknown_options_to_clang(tester):
     tester.with_target_path('t').with_additional_option('option', '1').test()
-    tester.index.parse.assert_called_once_with('t', ['--option', '1'])
+    passed_options = tester.index.parse.call_args[0][1]
+    assert '--option', '1' in passed_options
+
+
+def test_analysis_will_add_clang_builtin_headers_as_include_path(tester):
+    tester.with_llvm_path('path').test()
+    passed_options = tester.index.parse.call_args[0][1]
+    assert 'path/clang/3.6.0/include/' in passed_options
 
 
 def test_analysis_is_done(tester):
