@@ -94,7 +94,7 @@ Scenario Outline: Succeeding analysis
     And nested method "method"
     And nested <type> parameter "<name>"
     When analysis is made
-    Then analysis reports "variable" "<name>" as "<rule>" rule violation
+    Then analysis reports "parameter" "<name>" as "<rule>" rule violation
 
   Examples: Names that break the rules
   | name       | type      | rule                 |

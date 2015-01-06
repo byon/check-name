@@ -53,13 +53,12 @@ def identify_rules_for_class(node):
 def identify_rules_for_variables(node):
     if node.type.is_const_qualified():
         return [ScreamingSnakeCaseRule('constant variable')]
-    result = affixed_name_rule.AffixedNameRule()
-    result.add_prefix_rule('array variable', 'a', identification.is_array)
-    result.add_prefix_rule('pointer variable', 'p', identification.is_pointer)
-    result.add_prefix_rule('reference variable', 'r',
-                           identification.is_reference)
-    result.add_postfix_rule('member variable', 'M', identification.is_member)
-    result.add_postfix_rule('parameter', 'P', identification.is_parameter)
+    result = affixed_name_rule.AffixedNameRule(_variable_base_name(node))
+    result.add_prefix_rule('array', 'a', identification.is_array)
+    result.add_prefix_rule('pointer', 'p', identification.is_pointer)
+    result.add_prefix_rule('reference', 'r', identification.is_reference)
+    result.add_postfix_rule(None, 'M', identification.is_member)
+    result.add_postfix_rule(None, 'P', identification.is_parameter)
     return [result]
 
 
@@ -148,3 +147,13 @@ class PostFixRule(ConditionalRule):
                                  'has redundant postfix "' + postfix + '"',
                                  lambda n: n.endswith(self.postfix),
                                  condition)
+
+
+def _variable_base_name(node):
+    if identification.is_variable(node):
+        return 'variable'
+    if identification.is_member(node):
+        return 'member variable'
+    if identification.is_parameter(node):
+        return 'parameter'
+    assert False, 'unidentified variable type'

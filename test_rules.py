@@ -77,9 +77,21 @@ def test_variable_should_have_affixed_name_rule(identify_rules_tester):
     assert affixed_name_rule.AffixedNameRule in _rule_types(result)
 
 
+def test_variable_should_have_base_name(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
+    identified_rule = _rule_of_type(result, affixed_name_rule.AffixedNameRule)
+    assert identified_rule.base_name == 'variable'
+
+
 def test_member_variable_should_have_affixed_name_rule(identify_rules_tester):
     result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
     assert affixed_name_rule.AffixedNameRule in _rule_types(result)
+
+
+def test_member_variable_should_have_base_name(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.FIELD_DECL).test()
+    identified_rule = _rule_of_type(result, affixed_name_rule.AffixedNameRule)
+    assert identified_rule.base_name == 'member variable'
 
 
 def test_parameter_should_have_affixed_name_rule(identify_rules_tester):
@@ -87,38 +99,44 @@ def test_parameter_should_have_affixed_name_rule(identify_rules_tester):
     assert affixed_name_rule.AffixedNameRule in _rule_types(result)
 
 
+def test_parameter_should_have_base_name(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.PARM_DECL).test()
+    identified_rule = _rule_of_type(result, affixed_name_rule.AffixedNameRule)
+    assert identified_rule.base_name == 'parameter'
+
+
 def test_m_postfix_rule_for_member_variables(identify_rules_tester,
                                              affixed_rule):
     identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
     affixed_rule.add_postfix_rule.assert_any_call(
-        'member variable', 'M', identification.is_member)
+        None, 'M', identification.is_member)
 
 
 def test_r_prefix_rule_for_reference_variables(identify_rules_tester,
                                                affixed_rule):
     identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
     affixed_rule.add_prefix_rule.assert_any_call(
-        'reference variable', 'r', identification.is_reference)
+        'reference', 'r', identification.is_reference)
 
 
 def test_p_prefix_rule_for_pointer_variables(identify_rules_tester,
                                              affixed_rule):
     identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
     affixed_rule.add_prefix_rule.assert_any_call(
-        'pointer variable', 'p', identification.is_pointer)
+        'pointer', 'p', identification.is_pointer)
 
 
 def test_a_prefix_rule_for_array_variables(identify_rules_tester,
                                            affixed_rule):
     identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
     affixed_rule.add_prefix_rule.assert_any_call(
-        'array variable', 'a', identification.is_array)
+        'array', 'a', identification.is_array)
 
 
 def test_p_postfix_rule_for_parameters(identify_rules_tester, affixed_rule):
     identify_rules_tester.with_kind(CursorKind.PARM_DECL).test()
     affixed_rule.add_postfix_rule.assert_any_call(
-        'parameter', 'P', identification.is_parameter)
+        None, 'P', identification.is_parameter)
 
 
 def test_constant_should_have_screaming_snake_case_rule(identify_rules_tester):

@@ -111,6 +111,20 @@ def test_name_with_expected_pre_and_postfixes_is_not_a_violation(tester):
     assert [] == tester.test('aNameM')
 
 
+def test_prefix_error_also_without_specified_name(tester):
+    rule = AffixedNameRule('base')
+    rule.add_prefix_rule(None, 'p', lambda n: True)
+    result = rule.test(MagicMock(spelling='name'))
+    assert Error('base', 'name', 'missing prefix "p"') in result
+
+
+def test_postfix_error_also_without_specified_name(tester):
+    rule = AffixedNameRule('base')
+    rule.add_postfix_rule(None, 'p', lambda n: True)
+    result = rule.test(MagicMock(spelling='name'))
+    assert Error('base', 'name', 'missing postfix "p"') in result
+
+
 @pytest.fixture
 def tester():
     return Tester()
@@ -118,7 +132,7 @@ def tester():
 
 class Tester:
     def __init__(self):
-        self.rule = AffixedNameRule()
+        self.rule = AffixedNameRule('base')
 
     def with_expected_prefix(self, prefix):
         self.rule.add_prefix_rule('type', prefix, lambda n: True)
@@ -142,10 +156,11 @@ class Tester:
         return self.result
 
     def assert_missing_failure(self, expected):
-        assert Error('type', self.tested_name, expected) in self.result
+        assert Error('type base', self.tested_name, expected) in self.result
 
     def assert_redundant_failure(self, expected):
-        assert Error('non-type', self.tested_name, expected) in self.result
+        error = Error('non-type base', self.tested_name, expected)
+        assert error in self.result
 
     def assert_generic_failures_include(self, expected):
-        assert Error('variable', self.tested_name, expected) in self.result
+        assert Error('base', self.tested_name, expected) in self.result

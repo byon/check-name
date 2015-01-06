@@ -53,17 +53,22 @@ class AffixedNameRule:
                 return self._type_name
             return 'non-' + self._type_name
 
-    def __init__(self):
+    def __init__(self, base_name='variable'):
         self.errors = []
         self.prefix_rules = []
         self.postfix_rules = []
+        self.base_name = base_name
 
     def add_prefix_rule(self, type_name, prefix, condition):
-        rule = self.AffixRule(type_name, 'prefix', prefix, condition)
+        start = type_name + ' ' if type_name else ''
+        full_type_name = start + self.base_name
+        rule = self.AffixRule(full_type_name, 'prefix', prefix, condition)
         self.prefix_rules.append(rule)
 
     def add_postfix_rule(self, type_name, postfix, condition):
-        rule = self.AffixRule(type_name, 'postfix', postfix, condition)
+        start = type_name + ' ' if type_name else ''
+        full_type_name = start + self.base_name
+        rule = self.AffixRule(full_type_name, 'postfix', postfix, condition)
         self.postfix_rules.append(rule)
 
     def test(self, node):
@@ -99,7 +104,7 @@ class AffixedNameRule:
             self._add_error(node, 'is not in ' + case_type)
 
     def _add_error(self, node, description, type_name=None):
-        type_name = type_name if type_name else 'variable'
+        type_name = type_name if type_name else self.base_name
         error = rules.Error(type_name, node.spelling, description)
         self.errors.append(error)
 
