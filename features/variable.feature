@@ -17,6 +17,7 @@ Scenario Outline: Succeeding analysis
   | array         | aVariable         |
   | pointer array | apVariable        |
   | smart pointer | pVariable         |
+  | constant      | CONSTANT_VARIABLE |
 
 # Note: Also boost smart arrays are recognized. They are not tested
 # here, because that would bring dependency for boost. Also typedefs
@@ -42,6 +43,7 @@ Scenario Outline: Succeeding analysis
   | aFoo | pointer array | prefix "p"           |
   | pFoo | pointer array | prefix "a"           |
   | foo  | smart pointer | prefix "p"           |
+  | foo  | constant      | SCREAMING_SNAKE_CASE |
 
   Scenario Outline: Succeeding member variable analysis
     Given source with class "Class"

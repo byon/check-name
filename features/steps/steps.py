@@ -50,7 +50,7 @@ def source_with_reference_variable(context, name):
 
 @given('source with {type} "{name}"')
 def source_with_type(context, type, name):
-    context.ast.add_child(_identify_type(type)(name))
+    context.ast.add_child(_create_node(type, name))
 
 
 @given('nested reference variable "{name}"')
@@ -63,7 +63,7 @@ def contains_reference_variable(context, name):
 
 @given('nested {type} "{name}"')
 def contains_type(context, type, name):
-    context.ast.open_child.add_child(_identify_type(type)(name))
+    context.ast.open_child.add_child(_create_node(type, name))
 
 
 @given('source file with a syntax warning')
@@ -87,7 +87,7 @@ def source_file_that_includes_file(context, path):
 def source_file_contains_type(context, path, type, name):
     file = ast.TranslationUnit(path)
     context.included.append(file)
-    file.add_child(_identify_type(type)(name))
+    file.add_child(_create_node(type, name))
     file.create_file()
 
 
@@ -166,9 +166,16 @@ def _mandatory_options(path):
     return ['--llvm_path', LLVM_PATH, '--target', path, '-std=c++11']
 
 
+def _create_node(type, name):
+    if 'const' in type:
+        return ast.Variable(name, type='const int', value='0')
+    return _identify_type(type)(name)
+
+
 def _identify_type(name):
     type_map = {'array_variable': ast.ArrayVariable,
                 'class': ast.Class,
+                'constant_variable': ast.Variable,
                 'function': ast.Function,
                 'interface_class': ast.InterfaceClass,
                 'method': ast.Method,

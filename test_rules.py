@@ -110,6 +110,11 @@ def test_a_prefix_rule_for_array_variables(identify_rules_tester,
         'array variable', 'a', identification.is_array)
 
 
+def test_constant_should_have_screaming_snake_case_rule(identify_rules_tester):
+    result = identify_rules_tester.with_constant_variable().test()
+    assert rules.ScreamingSnakeCaseRule in _rule_types(result)
+
+
 def test_construction_of_rule():
     test = MagicMock()
     rule = rules.Rule('identifier', 'description', test)
@@ -176,6 +181,12 @@ def test_construction_of_headless_camel_case_rule():
     assert rule.rule_test == case_rules.is_headless_camel_case
 
 
+def test_construction_of_screaming_snake_case_rule():
+    rule = rules.ScreamingSnakeCaseRule('identifier')
+    assert rule.error_description == 'is not in SCREAMING_SNAKE_CASE'
+    assert rule.rule_test == case_rules.is_screaming_snake_case
+
+
 def test_construction_of_postfix_rule():
     rule = rules.PostFixRule('identifier', 'postfix', MagicMock())
     assert rule.postfix == 'postfix'
@@ -210,13 +221,14 @@ def affixed_rule(request):
 
 
 class _Node:
-    def __init__(self, kind=None, name=None):
+    def __init__(self, kind=None, name=None, is_constant=False):
         self.kind = MagicMock()
         self.kind.__eq__.side_effect = lambda k: k == kind
         self.spelling = name if name else ''
         self.pure_virtual_method = False
         self.children = []
         self.type = MagicMock()
+        self.type.is_const_qualified.return_value = is_constant
 
     def add_child(self, child):
         self.children.append(child)
@@ -263,6 +275,10 @@ class _IdentifyRulesTester:
     def with_reference_member(self):
         self.node = _Node(CursorKind.FIELD_DECL)
         self.node.type.kind = TypeKind.LVALUEREFERENCE
+        return self
+
+    def with_constant_variable(self):
+        self.node = _Node(CursorKind.VAR_DECL, is_constant=True)
         return self
 
 

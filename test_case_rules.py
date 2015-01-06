@@ -103,3 +103,55 @@ def test_recognizing_headless_camel_case_error_when_too_many_uppercase():
 
 def test_recognizing_headless_camel_case_error_with_number_at_middle_of_part():
     assert not case_rules.is_headless_camel_case('fo1234oBar')
+
+
+def test_recognizing_screaming_snake_case_with_single_part():
+    assert case_rules.is_screaming_snake_case('SCREAM')
+
+
+def test_recognizing_screaming_snake_case_with_multiple_parts():
+    assert case_rules.is_screaming_snake_case('SCREAM_SOME_MORE')
+
+
+def test_recognizing_screaming_snake_case_with_numbers_at_end():
+    assert case_rules.is_screaming_snake_case('SCREAM_WITH_NUMBERS_1234')
+
+
+def test_recognizing_screaming_snake_case_with_numbers_at_middle():
+    assert case_rules.is_screaming_snake_case('SCREAM_2_LOUD')
+
+
+def test_recognizing_screaming_snake_case_error_with_lowercase():
+    assert not case_rules.is_screaming_snake_case('whimper')
+
+
+def test_recognizing_screaming_snake_case_error_with_capital_start():
+    assert not case_rules.is_screaming_snake_case('Capital')
+
+
+def test_recognizing_screaming_snake_case_error_with_camel_case():
+    assert not case_rules.is_screaming_snake_case('notSnakyEnough')
+
+
+def test_recognizing_screaming_snake_case_error_with_lower_case():
+    assert not case_rules.is_screaming_snake_case('not_screaming')
+
+
+def test_recognizing_screaming_snake_case_error_with_underscore_at_start():
+    assert not case_rules.is_screaming_snake_case('_SOMETHING')
+
+
+def test_recognizing_screaming_snake_case_error_with_underscore_at_end():
+    assert not case_rules.is_screaming_snake_case('SOMETHING_')
+
+
+def test_recognizing_screaming_snake_case_error_with_numbers_in_middle():
+    assert not case_rules.is_screaming_snake_case('D15GU5T1NG')
+
+
+def test_recognizing_screaming_snake_case_error_with_numbers_at_start():
+    assert not case_rules.is_screaming_snake_case('2_MANY_PROBLEMS')
+
+
+def test_recognizing_screaming_snake_case_error_with_numbers_in_end_of_part():
+    assert not case_rules.is_screaming_snake_case('AREA51_PARTY')

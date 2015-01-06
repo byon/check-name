@@ -32,3 +32,7 @@ def is_camel_case(name):
 def is_headless_camel_case(name):
     expression = '^[a-z]+\d*([A-Z][a-z]+\d*)*$'
     return True if re.match(expression, name) else False
+
+
+def is_screaming_snake_case(name):
+    return True if re.match('^[A-Z]+(_([A-Z]+|\d+))*$', name) else False

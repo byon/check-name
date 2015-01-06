@@ -51,6 +51,8 @@ def identify_rules_for_class(node):
 
 
 def identify_rules_for_variables(node):
+    if node.type.is_const_qualified():
+        return [ScreamingSnakeCaseRule('constant variable')]
     result = affixed_name_rule.AffixedNameRule()
     result.add_prefix_rule('array variable', 'a', identification.is_array)
     result.add_prefix_rule('pointer variable', 'p', identification.is_pointer)
@@ -128,6 +130,13 @@ class HeadlessCamelCaseRule(Rule):
         description = 'is not in headlessCamelCase'
         Rule.__init__(self, identifier, description,
                       case_rules.is_headless_camel_case)
+
+
+class ScreamingSnakeCaseRule(Rule):
+    def __init__(self, identifier):
+        description = 'is not in SCREAMING_SNAKE_CASE'
+        Rule.__init__(self, identifier, description,
+                      case_rules.is_screaming_snake_case)
 
 
 class PostFixRule(ConditionalRule):
