@@ -25,31 +25,44 @@
 from clang.cindex import CursorKind, TypeKind
 import pytest
 from mock import MagicMock
-from identification import is_name_for_smart_pointer, is_pointer
+from identification import is_array, is_name_for_smart_pointer, is_pointer
 
 
-def test_pointer_is_identified_as_pointer(tester):
-    assert True == tester.with_type(TypeKind.POINTER).test()
+def test_pointer_is_identified_as_pointer(pointer_tester):
+    assert True == pointer_tester.with_type(TypeKind.POINTER).test()
 
 
-def test_not_pointer_is_not_identified_as_pointer(tester):
-    assert False == tester.with_type(TypeKind.INVALID).test()
+def test_not_pointer_is_not_identified_as_pointer(pointer_tester):
+    assert False == pointer_tester.with_type(TypeKind.INVALID).test()
 
 
-def test_member_pointer_is_identified_as_pointer(tester):
-    assert True == tester.with_type(TypeKind.MEMBERPOINTER).test()
+def test_member_pointer_is_identified_as_pointer(pointer_tester):
+    assert True == pointer_tester.with_type(TypeKind.MEMBERPOINTER).test()
 
 
-def test_array_pointer_is_identified_as_pointer(tester):
-    assert True == tester.with_type(TypeKind.CONSTANTARRAY).test()
+def test_array_pointer_is_identified_as_pointer(pointer_tester):
+    assert True == pointer_tester.with_type(TypeKind.CONSTANTARRAY).test()
 
 
-def test_variable_whose_type_ends_ptr_is_identified_as_pointer(tester):
-    assert True == tester.with_smart_pointer_variable().test()
+def test_variable_whose_type_ends_ptr_is_identified_as_pointer(pointer_tester):
+    assert True == pointer_tester.with_smart_pointer_variable().test()
 
 
-def test_typedef_smart_pointer_variable_is_identified_as_pointer(tester):
-    assert True == tester.with_typedef_smart_pointer_variable().test()
+def test_typedef_smart_pointer_variable_is_identified_as_pointer(
+        pointer_tester):
+    assert True == pointer_tester.with_typedef_smart_pointer_variable().test()
+
+
+def test_array_is_identified_as_array(array_tester):
+    assert True == array_tester.with_type(TypeKind.CONSTANTARRAY).test()
+
+
+def test_not_array_is_not_identified_as_array(array_tester):
+    assert False == array_tester.with_type(TypeKind.INVALID).test()
+
+
+def test_variable_whose_type_ends_array_is_identified_as_array(array_tester):
+    assert True == array_tester.with_smart_array_variable().test()
 
 
 def test_unrelated_class_name_is_not_identified_as_smart_pointer():
@@ -79,8 +92,13 @@ def test_vector_of_smart_pointers_is_not_identified_as_smart_pointer():
 
 
 @pytest.fixture
-def tester():
-    return _Tester()
+def pointer_tester():
+    return _PointerTester()
+
+
+@pytest.fixture
+def array_tester():
+    return _ArrayTester()
 
 
 class _Tester():
@@ -94,18 +112,6 @@ class _Tester():
 
     def with_type(self, type):
         self.node.type = MagicMock(kind=type)
-        return self._set_array_types()
-
-    def with_smart_pointer_variable(self):
-        self.with_kind(CursorKind.VAR_DECL)
-        self.with_type(TypeKind.UNEXPOSED)
-        self._set_type_name('std::shared_ptr<int>')
-        return self._set_array_types()
-
-    def with_typedef_smart_pointer_variable(self):
-        self.with_kind(CursorKind.VAR_DECL)
-        self.with_type(TypeKind.TYPEDEF)
-        self._set_type_name('std::shared_ptr<int>')
         return self._set_array_types()
 
     def _set_array_types(self):
@@ -125,5 +131,32 @@ class _Tester():
         self.node.type.get_canonical.return_value = canonical_type
         return self
 
+
+class _PointerTester(_Tester):
+
+    def with_smart_pointer_variable(self):
+        self.with_kind(CursorKind.VAR_DECL)
+        self.with_type(TypeKind.UNEXPOSED)
+        self._set_type_name('std::shared_ptr<int>')
+        return self._set_array_types()
+
+    def with_typedef_smart_pointer_variable(self):
+        self.with_kind(CursorKind.VAR_DECL)
+        self.with_type(TypeKind.TYPEDEF)
+        self._set_type_name('std::shared_ptr<int>')
+        return self._set_array_types()
+
     def test(self):
         return is_pointer(self.node)
+
+
+class _ArrayTester(_Tester):
+
+    def with_smart_array_variable(self):
+        self.with_kind(CursorKind.VAR_DECL)
+        self.with_type(TypeKind.UNEXPOSED)
+        self._set_type_name('boost::scoped_array<int>')
+        return self._set_array_types()
+
+    def test(self):
+        return is_array(self.node)

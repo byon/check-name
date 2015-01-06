@@ -76,22 +76,9 @@ def is_pure_pointer(node):
 
 
 def is_smart_pointer(node):
-    if not _is_type_possible_for_smart_pointer(node.type):
+    if not _is_type_possibly_smart_array_or_pointer(node.type):
         return False
     return is_name_for_smart_pointer(node.type.get_canonical().spelling)
-
-
-def is_array_pointer(node):
-    array_type = node.type.get_array_element_type()
-    return array_type.get_pointee().kind is not TypeKind.INVALID
-
-
-def is_array(node):
-    type = node.type.kind
-    return (type == TypeKind.CONSTANTARRAY or
-            type == TypeKind.INCOMPLETEARRAY or
-            type == TypeKind.VARIABLEARRAY or
-            type == TypeKind.DEPENDENTSIZEDARRAY)
 
 
 def is_name_for_smart_pointer(name):
@@ -100,5 +87,34 @@ def is_name_for_smart_pointer(name):
     return False
 
 
-def _is_type_possible_for_smart_pointer(type):
+def is_array_pointer(node):
+    array_type = node.type.get_array_element_type()
+    return array_type.get_pointee().kind is not TypeKind.INVALID
+
+
+def is_array(node):
+    return is_pure_array(node) or is_smart_array(node)
+
+
+def is_pure_array(node):
+    type = node.type.kind
+    return (type == TypeKind.CONSTANTARRAY or
+            type == TypeKind.INCOMPLETEARRAY or
+            type == TypeKind.VARIABLEARRAY or
+            type == TypeKind.DEPENDENTSIZEDARRAY)
+
+
+def is_smart_array(node):
+    if not _is_type_possibly_smart_array_or_pointer(node.type):
+        return False
+    return is_name_for_smart_array(node.type.get_canonical().spelling)
+
+
+def is_name_for_smart_array(name):
+    if re.compile(r'^boost::([a-z]+_)array').search(name):
+        return True
+    return False
+
+
+def _is_type_possibly_smart_array_or_pointer(type):
     return (type.kind == TypeKind.UNEXPOSED or type.kind == TypeKind.TYPEDEF)
