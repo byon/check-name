@@ -48,6 +48,10 @@ def test_variable_whose_type_ends_ptr_is_identified_as_pointer(tester):
     assert True == tester.with_smart_pointer_variable().test()
 
 
+def test_typedef_smart_pointer_variable_is_identified_as_pointer(tester):
+    assert True == tester.with_typedef_smart_pointer_variable().test()
+
+
 def test_unrelated_class_name_is_not_identified_as_smart_pointer():
     assert False == is_name_for_smart_pointer('NotSmartPointer')
 
@@ -95,7 +99,13 @@ class _Tester():
     def with_smart_pointer_variable(self):
         self.with_kind(CursorKind.VAR_DECL)
         self.with_type(TypeKind.UNEXPOSED)
-        self.node.type.spelling = 'std::shared_ptr<int>'
+        self._set_type_name('std::shared_ptr<int>')
+        return self._set_array_types()
+
+    def with_typedef_smart_pointer_variable(self):
+        self.with_kind(CursorKind.VAR_DECL)
+        self.with_type(TypeKind.TYPEDEF)
+        self._set_type_name('std::shared_ptr<int>')
         return self._set_array_types()
 
     def _set_array_types(self):
@@ -108,6 +118,11 @@ class _Tester():
         self.node.type.get_array_element_type.return_value = array_element_type
         element_pointee_type = MagicMock(kind=element_kind)
         array_element_type.get_pointee.return_value = element_pointee_type
+        return self
+
+    def _set_type_name(self, name):
+        canonical_type = MagicMock(spelling=name)
+        self.node.type.get_canonical.return_value = canonical_type
         return self
 
     def test(self):

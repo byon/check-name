@@ -76,9 +76,9 @@ def is_pure_pointer(node):
 
 
 def is_smart_pointer(node):
-    if node.type.kind != TypeKind.UNEXPOSED:
+    if not _is_type_possible_for_smart_pointer(node.type):
         return False
-    return is_name_for_smart_pointer(node.type.spelling)
+    return is_name_for_smart_pointer(node.type.get_canonical().spelling)
 
 
 def is_array_pointer(node):
@@ -98,3 +98,7 @@ def is_name_for_smart_pointer(name):
     if re.compile(r'^(std|boost)::([a-z]+_)ptr').search(name):
         return True
     return False
+
+
+def _is_type_possible_for_smart_pointer(type):
+    return (type.kind == TypeKind.UNEXPOSED or type.kind == TypeKind.TYPEDEF)
