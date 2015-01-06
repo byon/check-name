@@ -59,6 +59,7 @@ def identify_rules_for_variables(node):
     result.add_prefix_rule('reference', 'r', identification.is_reference)
     result.add_postfix_rule(None, 'M', identification.is_member)
     result.add_postfix_rule(None, 'P', identification.is_parameter)
+    result.add_postfix_rule('static', 'S', identification.is_static)
     return [result]
 
 

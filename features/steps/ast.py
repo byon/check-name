@@ -154,6 +154,11 @@ class Variable(_Node):
         _Node.__init__(self, name, type + ' ' + name, assignment + ';\n')
 
 
+class StaticVariable(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'static int ' + name, ';\n')
+
+
 class Parameter(_Node):
     def __init__(self, name, type=None):
         type = type if type else 'int'

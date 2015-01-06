@@ -22,7 +22,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-from clang.cindex import CursorKind, TypeKind
+from clang.cindex import CursorKind, StorageClass, TypeKind
 import re
 
 
@@ -39,6 +39,10 @@ def is_interface_class(node):
 
 def is_function(node):
     return CursorKind.FUNCTION_DECL == node.kind
+
+
+def is_static(node):
+    return node.storage_class == StorageClass.STATIC
 
 
 def is_member(node):

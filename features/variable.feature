@@ -18,6 +18,7 @@ Scenario Outline: Succeeding analysis
   | pointer array | apVariable        |
   | smart pointer | pVariable         |
   | constant      | CONSTANT_VARIABLE |
+  | static        | variableS         |
 
 # Note: Also boost smart arrays are recognized. They are not tested
 # here, because that would bring dependency for boost. Also typedefs
@@ -32,18 +33,20 @@ Scenario Outline: Succeeding analysis
     Then analysis reports "<type> variable" "<name>" as "<rule>" rule violation
 
   Examples: Names that break the rules
-  | name | type          | rule                 |
-  | Foo  |               | headlessCamelCase    |
-  | foo  | reference     | prefix "r"           |
-  | rFoo |               | redundant prefix "r" |
-  | foo  | pointer       | prefix "p"           |
-  | pFoo |               | redundant prefix "p" |
-  | foo  | array         | prefix "a"           |
-  | aFoo |               | redundant prefix "a" |
-  | aFoo | pointer array | prefix "p"           |
-  | pFoo | pointer array | prefix "a"           |
-  | foo  | smart pointer | prefix "p"           |
-  | foo  | constant      | SCREAMING_SNAKE_CASE |
+  | name | type          | rule                  |
+  | Foo  |               | headlessCamelCase     |
+  | foo  | reference     | prefix "r"            |
+  | rFoo |               | redundant prefix "r"  |
+  | foo  | pointer       | prefix "p"            |
+  | pFoo |               | redundant prefix "p"  |
+  | foo  | array         | prefix "a"            |
+  | aFoo |               | redundant prefix "a"  |
+  | aFoo | pointer array | prefix "p"            |
+  | pFoo | pointer array | prefix "a"            |
+  | foo  | smart pointer | prefix "p"            |
+  | foo  | constant      | SCREAMING_SNAKE_CASE  |
+  | foo  | static        | postfix "S"           |
+  | fooS |               | redundant postfix "S" |
 
   Scenario Outline: Succeeding member variable analysis
     Given source with class "Class"

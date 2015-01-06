@@ -188,6 +188,7 @@ def _identify_type(name):
                 'preprocessor_condition': ast.PreprocessorCondition,
                 'pure_virtual_method': ast.PureVirtualMethod,
                 'smart_pointer_variable': ast.SmartPointerVariable,
+                'static_variable': ast.StaticVariable,
                 'struct': ast.Struct,
                 'reference_variable': ast.ReferenceVariable,
                 'variable': ast.Variable}
