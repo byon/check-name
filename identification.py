@@ -22,12 +22,12 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import clang
+from clang.cindex import CursorKind, TypeKind
 import re
 
 
 def is_class(node):
-    return clang.cindex.CursorKind.CLASS_DECL == node.kind
+    return CursorKind.CLASS_DECL == node.kind
 
 
 def is_interface_class(node):
@@ -38,31 +38,31 @@ def is_interface_class(node):
 
 
 def is_function(node):
-    return clang.cindex.CursorKind.FUNCTION_DECL == node.kind
+    return CursorKind.FUNCTION_DECL == node.kind
 
 
 def is_member(node):
-    return clang.cindex.CursorKind.FIELD_DECL == node.kind
+    return CursorKind.FIELD_DECL == node.kind
 
 
 def is_method(node):
-    return clang.cindex.CursorKind.CXX_METHOD == node.kind
+    return CursorKind.CXX_METHOD == node.kind
 
 
 def is_namespace(node):
-    return clang.cindex.CursorKind.NAMESPACE == node.kind
+    return CursorKind.NAMESPACE == node.kind
 
 
 def is_struct(node):
-    return clang.cindex.CursorKind.STRUCT_DECL == node.kind
+    return CursorKind.STRUCT_DECL == node.kind
 
 
 def is_variable(node):
-    return clang.cindex.CursorKind.VAR_DECL == node.kind
+    return CursorKind.VAR_DECL == node.kind
 
 
 def is_reference(node):
-    return clang.cindex.TypeKind.LVALUEREFERENCE == node.type.kind
+    return TypeKind.LVALUEREFERENCE == node.type.kind
 
 
 def is_pointer(node):
@@ -71,27 +71,27 @@ def is_pointer(node):
 
 
 def is_pure_pointer(node):
-    return (clang.cindex.TypeKind.POINTER == node.type.kind or
-            clang.cindex.TypeKind.MEMBERPOINTER == node.type.kind)
+    return (TypeKind.POINTER == node.type.kind or
+            TypeKind.MEMBERPOINTER == node.type.kind)
 
 
 def is_smart_pointer(node):
-    if node.type.kind != clang.cindex.TypeKind.UNEXPOSED:
+    if node.type.kind != TypeKind.UNEXPOSED:
         return False
     return is_name_for_smart_pointer(node.type.spelling)
 
 
 def is_array_pointer(node):
     array_type = node.type.get_array_element_type()
-    return array_type.get_pointee().kind is not clang.cindex.TypeKind.INVALID
+    return array_type.get_pointee().kind is not TypeKind.INVALID
 
 
 def is_array(node):
     type = node.type.kind
-    return (type == clang.cindex.TypeKind.CONSTANTARRAY or
-            type == clang.cindex.TypeKind.INCOMPLETEARRAY or
-            type == clang.cindex.TypeKind.VARIABLEARRAY or
-            type == clang.cindex.TypeKind.DEPENDENTSIZEDARRAY)
+    return (type == TypeKind.CONSTANTARRAY or
+            type == TypeKind.INCOMPLETEARRAY or
+            type == TypeKind.VARIABLEARRAY or
+            type == TypeKind.DEPENDENTSIZEDARRAY)
 
 
 def is_name_for_smart_pointer(name):
