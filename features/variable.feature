@@ -18,6 +18,13 @@ Scenario Outline: Succeeding analysis
   | pointer array | apVariable        |
   | smart pointer | pVariable         |
 
+# Note: Also boost smart arrays are recognized. They are not tested
+# here, because that would bring dependency for boost. Also typedefs
+# to smart pointers/arrays are recognized, but not tested on feature
+# level. For both of these, it is deemed sufficient to test on unit
+# level and avoid dependencies and/or complicating the feature tests
+# further.
+
   Scenario Outline: Failing analysis
     Given source with <type> variable "<name>"
     When analysis is made
