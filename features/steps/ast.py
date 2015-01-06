@@ -122,7 +122,19 @@ class PureVirtualMethod(_Node):
 
 class Function(_Node):
     def __init__(self, name):
-        _Node.__init__(self, name, 'void ' + name + '();\n', '')
+        _Node.__init__(self, name, 'void ' + name + '(', ');\n')
+        self.parameters = []
+
+    def add_child(self, child):
+        assert issubclass(child.__class__, Parameter)
+        self.parameters.append(child)
+
+    def generate(self):
+        assert not self.children
+        result = self.start
+        result += ', '.join([p.generate() for p in self.parameters])
+        result += self.end
+        return result
 
 
 # Currently Method is exactly the same as Function
@@ -140,6 +152,24 @@ class Variable(_Node):
         type = type if type else 'int'
         assignment = ' = ' + value if value else ''
         _Node.__init__(self, name, type + ' ' + name, assignment + ';\n')
+
+
+class Parameter(_Node):
+    def __init__(self, name, type=None):
+        type = type if type else 'int'
+        _Node.__init__(self, name, type + ' ' + name, '')
+
+
+class ReferenceParameter(Parameter):
+    def __init__(self, name, type=None):
+        type = type if type else 'int'
+        _Node.__init__(self, name, type + '& ' + name, '')
+
+
+class PointerParameter(Parameter):
+    def __init__(self, name, type=None):
+        type = type if type else 'int'
+        _Node.__init__(self, name, type + '* ' + name, '')
 
 
 class ArrayVariable(_Node):

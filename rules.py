@@ -30,7 +30,7 @@ import affixed_name_rule
 def identify_rules(node):
     if identification.is_namespace(node):
         return [CamelCaseRule('namespace')]
-    if identification.is_member(node) or identification.is_variable(node):
+    if identification.is_any_kind_of_variable(node):
         return identify_rules_for_variables(node)
     if identification.is_method(node):
         return [HeadlessCamelCaseRule('method')]
@@ -59,6 +59,7 @@ def identify_rules_for_variables(node):
     result.add_prefix_rule('reference variable', 'r',
                            identification.is_reference)
     result.add_postfix_rule('member variable', 'M', identification.is_member)
+    result.add_postfix_rule('parameter', 'P', identification.is_parameter)
     return [result]
 
 

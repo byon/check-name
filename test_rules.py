@@ -82,6 +82,11 @@ def test_member_variable_should_have_affixed_name_rule(identify_rules_tester):
     assert affixed_name_rule.AffixedNameRule in _rule_types(result)
 
 
+def test_parameter_should_have_affixed_name_rule(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.PARM_DECL).test()
+    assert affixed_name_rule.AffixedNameRule in _rule_types(result)
+
+
 def test_m_postfix_rule_for_member_variables(identify_rules_tester,
                                              affixed_rule):
     identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
@@ -108,6 +113,12 @@ def test_a_prefix_rule_for_array_variables(identify_rules_tester,
     identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
     affixed_rule.add_prefix_rule.assert_any_call(
         'array variable', 'a', identification.is_array)
+
+
+def test_p_postfix_rule_for_parameters(identify_rules_tester, affixed_rule):
+    identify_rules_tester.with_kind(CursorKind.PARM_DECL).test()
+    affixed_rule.add_postfix_rule.assert_any_call(
+        'parameter', 'P', identification.is_parameter)
 
 
 def test_constant_should_have_screaming_snake_case_rule(identify_rules_tester):

@@ -75,3 +75,32 @@ Scenario Outline: Succeeding analysis
   | pVariableM |           | redundant prefix "p" |
   | variableM  | array     | prefix "a"           |
   | aVariableM |           | redundant prefix "a" |
+
+  Scenario Outline: Succeeding parameter analysis
+    Given source with class "Class"
+    And nested method "method"
+    And nested <type> parameter "<name>"
+    When analysis is made
+    Then analysis should report no rule violations
+
+  Examples: Names that follow the rules
+  | type      | name       |
+  |           | variableP  |
+  | reference | rVariableP |
+  | pointer   | pVariableP |
+
+  Scenario Outline: Failing parameter analysis
+    Given source with class "Class"
+    And nested method "method"
+    And nested <type> parameter "<name>"
+    When analysis is made
+    Then analysis reports "variable" "<name>" as "<rule>" rule violation
+
+  Examples: Names that break the rules
+  | name       | type      | rule                 |
+  | VariableP  |           | headlessCamelCase    |
+  | variable   |           | postfix "P"          |
+  | variableP  | reference | prefix "r"           |
+  | variableP  | pointer   | prefix "p"           |
+  | pVariableP |           | redundant prefix "p" |
+  | pVariable  | pointer   | postfix "P"          |

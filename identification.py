@@ -57,8 +57,16 @@ def is_struct(node):
     return CursorKind.STRUCT_DECL == node.kind
 
 
+def is_any_kind_of_variable(node):
+    return is_member(node) or is_variable(node) or is_parameter(node)
+
+
 def is_variable(node):
     return CursorKind.VAR_DECL == node.kind
+
+
+def is_parameter(node):
+    return CursorKind.PARM_DECL == node.kind
 
 
 def is_reference(node):
