@@ -36,12 +36,14 @@ def run(arguments):
     return call(['python2', PATH_TO_ANALYZER] + arguments)
 
 
-def check_for_success(result):
-    eq_(0, result.exit_code, _unexpected_success_description(result))
+def check_for_success(result, given_input):
+    description = _unexpected_success_description(result, given_input)
+    eq_(0, result.exit_code, description)
 
 
-def check_for_failure(result):
-    not_eq_(0, result.exit_code, _unexpected_failure_description(result))
+def check_for_failure(result, given_input):
+    description = _unexpected_failure_description(result, given_input)
+    not_eq_(0, result.exit_code, description)
 
 
 def call(arguments):
@@ -52,25 +54,32 @@ def call(arguments):
     return Result(process.returncode, stdout, stderr)
 
 
-def _unexpected_success_description(result):
-    return _unexpected_result_description('succeed', 'failed', result)
+def _unexpected_success_description(result, given_input):
+    return _unexpected_result_description('succeed', 'failed', result,
+                                          given_input)
 
 
-def _unexpected_failure_description(result):
-    return _unexpected_result_description('fail', 'succeeded', result)
+def _unexpected_failure_description(result, given_input):
+    return _unexpected_result_description('fail', 'succeeded', result,
+                                          given_input)
 
 
-def _unexpected_result_description(expectation, actual_result, result):
-    template = ('Expected analysis to {}, but {}\n' +
-                _template_for_output('stdout') +
-                _template_for_output('stderr'))
-    return template.format(expectation, actual_result,
-                           result.stdout, result.stderr)
+def _unexpected_result_description(expectation, actual_result, result,
+                                   given_input):
+    input = given_input if given_input else '<No input>\n'
+    return ('Expected analysis to ' + expectation +
+            ', but ' + actual_result + ' with input:\n' +
+            _separator() + input + _separator() +
+            _output('stdout', result.stdout) +
+            _output('stderr', result.stderr))
 
 
-def _template_for_output(identifier):
-    separator = '-' * 80 + '\n'
-    return identifier + ':\n' + separator + '{}' + separator
+def _output(identifier, output):
+    return identifier + ':\n' + _separator() + output + _separator()
+
+
+def _separator():
+    return '-' * 80 + '\n'
 
 
 class Result:

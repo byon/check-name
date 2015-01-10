@@ -39,6 +39,7 @@ def before_scenario(context, scenario):
     context.ast = steps.ast.TranslationUnit()
     context.included = []
     context.skip_file_creation = False
+    context.given_input = None
 
 
 def after_scenario(context, scenario):

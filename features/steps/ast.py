@@ -78,7 +78,9 @@ class TranslationUnit(_Node):
     def create_file(self):
         _ensure_parent_exists(self.path_in_execution_directory)
         with open(self.path_in_execution_directory, 'w') as file:
-            file.write(self._generate_content())
+            content = self._generate_content()
+            file.write(content)
+            return content
 
     @property
     def path_in_execution_directory(self):

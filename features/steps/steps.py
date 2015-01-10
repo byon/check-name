@@ -34,7 +34,7 @@ LLVM_PATH = os.environ['LLVM_PATH']
 
 @given('an empty source file')
 def an_empty_source_file(context):
-    context.ast.create_file()
+    context.given_input = context.ast.create_file()
 
 
 @given('source file does not exist')
@@ -88,7 +88,7 @@ def source_file_contains_type(context, path, type, name):
     file = ast.TranslationUnit(path)
     context.included.append(file)
     file.add_child(_create_node(type, name))
-    file.create_file()
+    context.given_input = file.create_file()
 
 
 @given('preprocessor definitions contain "{definition}"')
@@ -109,19 +109,19 @@ def filter_excludes_directory(context, directory):
 @when('analysis is made')
 def analysis_is_made(context):
     if not context.skip_file_creation:
-        context.ast.create_file()
+        context.given_input = context.ast.create_file()
     context.result = analysis.run(_build_command(context,
                                                  context.additional_options))
 
 
 @then('analysis should succeed')
 def analysis_should_succeed(context):
-    analysis.check_for_success(context.result)
+    analysis.check_for_success(context.result, context.given_input)
 
 
 @then('analysis should fail')
 def analysis_should_fail(context):
-    analysis.check_for_failure(context.result)
+    analysis.check_for_failure(context.result, context.given_input)
 
 
 @then('analysis error cause should be missing source file')
@@ -147,14 +147,14 @@ def there_should_be_no_output(context):
 
 @then('analysis should report no rule violations')
 def analysis_should_report_no_rule_violations(context):
-    analysis.check_for_success(context.result)
+    analysis.check_for_success(context.result, context.given_input)
     eq_(context.result.stderr, '')
     eq_(context.result.stdout, '')
 
 
 @then('analysis reports "{type}" "{name}" as "{cause}" rule violation')
 def analysis_reports_rule_violation(context, type, name, cause):
-    analysis.check_for_failure(context.result)
+    analysis.check_for_failure(context.result, context.given_input)
     match_(_expression_for_failure(type, name, cause), context.result.stderr)
 
 
