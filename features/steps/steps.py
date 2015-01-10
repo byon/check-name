@@ -56,9 +56,8 @@ def source_with_type(context, type, name):
 @given('nested reference variable "{name}"')
 def contains_reference_variable(context, name):
     open_child = context.ast.open_child
-    assert open_child.__class__ == ast.Class
-    open_child.add_child(ast.Constructor(open_child.id))
-    open_child.add_child(ast.ReferenceVariable(name))
+    referenced = _ensure_variable_exists(open_child, 'referenced')
+    open_child.add_child(ast.ReferenceVariable(name, referenced))
 
 
 @given('nested {type} "{name}"')
@@ -164,6 +163,14 @@ def _build_command(context, additional_arguments):
 
 def _mandatory_options(path):
     return ['--llvm_path', LLVM_PATH, '--target', path, '-std=c++11']
+
+
+def _ensure_variable_exists(parent, name):
+    actual_name = name
+    if parent.__class__ == ast.Class:
+        actual_name += 'M'
+    parent.add_child(ast.Variable(actual_name))
+    return actual_name
 
 
 def _create_node(type, name):
