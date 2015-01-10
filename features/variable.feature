@@ -1,7 +1,8 @@
 Feature: Analysing variable names
 
 Scenario Outline: Succeeding analysis
-    Given source with <type> variable "<name>"
+    Given source with function implementation "function"
+    And nested <type> variable "<name>"
     When analysis is made
     Then analysis should report no rule violations
 
@@ -28,7 +29,8 @@ Scenario Outline: Succeeding analysis
 # further.
 
   Scenario Outline: Failing analysis
-    Given source with <type> variable "<name>"
+    Given source with function implementation "function"
+    And nested <type> variable "<name>"
     When analysis is made
     Then analysis reports "<type> variable" "<name>" as "<rule>" rule violation
 

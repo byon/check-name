@@ -184,6 +184,7 @@ def _identify_type(name):
                 'class': ast.Class,
                 'constant_variable': ast.Variable,
                 'function': ast.Function,
+                'function_implementation': ast.FunctionImplementation,
                 'interface_class': ast.InterfaceClass,
                 'method': ast.Method,
                 'namespace': ast.Namespace,

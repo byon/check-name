@@ -122,6 +122,11 @@ class PureVirtualMethod(_Node):
         _Node.__init__(self, name, 'virtual void ' + name + '() = 0;\n', '')
 
 
+class FunctionImplementation(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'void ' + name + '()\n{\n', '}')
+
+
 class Function(_Node):
     def __init__(self, name):
         _Node.__init__(self, name, 'void ' + name + '(', ');\n')
