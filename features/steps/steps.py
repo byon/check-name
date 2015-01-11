@@ -184,7 +184,8 @@ def _create_node(type, name):
 
 
 def _identify_type(name):
-    type_map = {'array_variable': ast.ArrayVariable,
+    type_map = {'abstract_class': ast.AbstractClass,
+                'array_variable': ast.ArrayVariable,
                 'class': ast.Class,
                 'constant_variable': ast.Variable,
                 'function': ast.Function,

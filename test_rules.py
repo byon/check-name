@@ -62,9 +62,20 @@ def test_struct_should_have_camel_case_rule(identify_rules_tester):
 
 def test_interface_class_should_have_if_postfix(identify_rules_tester):
     result = identify_rules_tester.with_interface_class().test()
-    rule = _rule_of_type(result, rules.PostFixRule)
-    assert rule.postfix == 'If'
-    assert rule.condition == identification.is_interface_class
+
+    def match(rule):
+        return (rule.postfix == 'If'
+                and rule.condition == identification.is_interface_class)
+    assert any(match(r) for r in _rules_of_type(result, rules.PostFixRule))
+
+
+def test_abstract_class_should_have_abs_postfix(identify_rules_tester):
+    result = identify_rules_tester.with_interface_class().test()
+
+    def match(rule):
+        return (rule.postfix == 'Abs'
+                and rule.condition == identification.is_abstract_class)
+    assert any(match(r) for r in _rules_of_type(result, rules.PostFixRule))
 
 
 def test_identifying_class():
@@ -310,6 +321,12 @@ class _IdentifyRulesTester:
         self.node.add_child(_Method(True, True))
         return self
 
+    def with_abstract_class(self):
+        self.node = _Node(CursorKind.CLASS_DECL)
+        self.node.add_child(_Method(True, True))
+        self.node.add_child(_Method())
+        return self
+
     def with_reference_variable(self):
         self.node = _Node(CursorKind.VAR_DECL)
         self.node.type.kind = TypeKind.LVALUEREFERENCE
@@ -330,7 +347,10 @@ def _rule_types(rules):
 
 
 def _rule_of_type(rules, type):
-    for rule in rules:
-        if rule.__class__ == type:
-            return rule
-    assert False, 'Could not find type ' + type.__name__
+    matches = _rules_of_type(rules, type)
+    assert matches, 'Could not find type ' + type.__name__
+    return matches[0]
+
+
+def _rules_of_type(rules, type):
+    return [r for r in rules if isinstance(r, type)]

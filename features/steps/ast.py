@@ -111,6 +111,13 @@ class InterfaceClass(Class):
         self.add_child(PureVirtualMethod('pureVirtualMethod'))
 
 
+class AbstractClass(Class):
+    def __init__(self, name):
+        Class.__init__(self, name)
+        self.add_child(PureVirtualMethod('pureVirtualMethod'))
+        self.add_child(Method('someMethod'))
+
+
 class PreprocessorCondition(_Node):
     def __init__(self, condition):
         _Node.__init__(self, condition, '#ifdef ' + condition + '\n',

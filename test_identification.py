@@ -25,7 +25,7 @@
 from clang.cindex import CursorKind, TypeKind
 import pytest
 from mock import MagicMock
-from identification import (is_array, is_interface_class,
+from identification import (is_abstract_class, is_array, is_interface_class,
                             is_name_for_smart_pointer, is_pointer)
 
 
@@ -48,6 +48,27 @@ def test_node_is_not_interface_with_unvirtual_methods(interface_tester):
 def test_node_is_not_interface_with_partly_virtual_methods(interface_tester):
     tester = interface_tester.with_pure_virtual_method().with_method()
     assert False == tester.test()
+
+
+def test_node_is_abstract_if_methods_are_partly_pure_virtual(abstract_tester):
+    tester = abstract_tester.with_pure_virtual_method().with_method()
+    assert True == tester.test()
+
+
+def test_node_is_not_abstract_without_children(abstract_tester):
+    assert False == abstract_tester.test()
+
+
+def test_node_is_not_abstract_without_methods(abstract_tester):
+    assert False == abstract_tester.with_unknown().test()
+
+
+def test_node_is_not_abstract_with_unvirtual_methods(abstract_tester):
+    assert False == abstract_tester.with_method().test()
+
+
+def test_node_is_not_abstract_with_only_pure_virtual_methods(abstract_tester):
+    assert False == abstract_tester.with_pure_virtual_method().test()
 
 
 def test_pointer_is_identified_as_pointer(pointer_tester):
@@ -119,6 +140,11 @@ def interface_tester():
 
 
 @pytest.fixture
+def abstract_tester():
+    return _AbstractClassTester()
+
+
+@pytest.fixture
 def pointer_tester():
     return _PointerTester()
 
@@ -128,7 +154,7 @@ def array_tester():
     return _ArrayTester()
 
 
-class _InterfaceTester():
+class _ClassTester():
     def __init__(self):
         self.node = MagicMock()
         self.children = []
@@ -150,9 +176,6 @@ class _InterfaceTester():
         self._add_child(self._Node(is_method=False, is_pure_virtual=False))
         return self
 
-    def test(self):
-        return is_interface_class(self.node)
-
     def _add_child(self, child):
         self.children.append(child)
         self.node.get_children.return_value = self.children
@@ -168,6 +191,18 @@ class _InterfaceTester():
 
         def is_pure_virtual_method(self):
             return self.is_pure_virtual
+
+
+class _InterfaceTester(_ClassTester):
+
+    def test(self):
+        return is_interface_class(self.node)
+
+
+class _AbstractClassTester(_ClassTester):
+
+    def test(self):
+        return is_abstract_class(self.node)
 
 
 class _VariableTester():

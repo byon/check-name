@@ -31,11 +31,18 @@ def is_class(node):
 
 
 def is_interface_class(node):
-    methods = [c for c in node.get_children() if is_method(c)]
+    methods = _list_methods(node)
     if not methods:
         return False
-    unpure = [m for m in methods if not m.is_pure_virtual_method()]
-    return len(unpure) == 0
+    return all(m.is_pure_virtual_method() for m in methods)
+
+
+def is_abstract_class(node):
+    methods = _list_methods(node)
+    if not methods:
+        return False
+    return (any(m.is_pure_virtual_method() for m in methods) and
+            any(not m.is_pure_virtual_method() for m in methods))
 
 
 def is_function(node):
@@ -137,3 +144,7 @@ def is_name_for_smart_array(name):
 
 def _is_type_possibly_smart_array_or_pointer(type):
     return (type.kind == TypeKind.UNEXPOSED or type.kind == TypeKind.TYPEDEF)
+
+
+def _list_methods(node):
+    return [c for c in node.get_children() if is_method(c)]

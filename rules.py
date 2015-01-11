@@ -47,6 +47,8 @@ def identify_rules_for_class(node):
     result = [CamelCaseRule('class')]
     result.append(PostFixRule('interface class', 'If',
                               identification.is_interface_class))
+    result.append(PostFixRule('abstract class', 'Abs',
+                              identification.is_abstract_class))
     return result
 
 
