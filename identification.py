@@ -31,10 +31,11 @@ def is_class(node):
 
 
 def is_interface_class(node):
-    for method in [c for c in node.get_children() if is_method(c)]:
-        if method.is_pure_virtual_method():
-            return True
-    return False
+    methods = [c for c in node.get_children() if is_method(c)]
+    if not methods:
+        return False
+    unpure = [m for m in methods if not m.is_pure_virtual_method()]
+    return len(unpure) == 0
 
 
 def is_function(node):

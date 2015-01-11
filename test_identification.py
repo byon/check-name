@@ -45,6 +45,11 @@ def test_node_is_not_interface_with_unvirtual_methods(interface_tester):
     assert False == interface_tester.with_method().test()
 
 
+def test_node_is_not_interface_with_partly_virtual_methods(interface_tester):
+    tester = interface_tester.with_pure_virtual_method().with_method()
+    assert False == tester.test()
+
+
 def test_pointer_is_identified_as_pointer(pointer_tester):
     assert True == pointer_tester.with_type(TypeKind.POINTER).test()
 
