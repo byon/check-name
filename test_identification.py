@@ -25,7 +25,24 @@
 from clang.cindex import CursorKind, TypeKind
 import pytest
 from mock import MagicMock
-from identification import is_array, is_name_for_smart_pointer, is_pointer
+from identification import (is_array, is_interface_class,
+                            is_name_for_smart_pointer, is_pointer)
+
+
+def test_node_is_interface_with_only_pure_virtual_methods(interface_tester):
+    assert True == interface_tester.with_pure_virtual_method().test()
+
+
+def test_node_is_not_interface_without_children(interface_tester):
+    assert False == interface_tester.test()
+
+
+def test_node_is_not_interface_without_methods(interface_tester):
+    assert False == interface_tester.with_unknown().test()
+
+
+def test_node_is_not_interface_with_unvirtual_methods(interface_tester):
+    assert False == interface_tester.with_method().test()
 
 
 def test_pointer_is_identified_as_pointer(pointer_tester):
@@ -92,6 +109,11 @@ def test_vector_of_smart_pointers_is_not_identified_as_smart_pointer():
 
 
 @pytest.fixture
+def interface_tester():
+    return _InterfaceTester()
+
+
+@pytest.fixture
 def pointer_tester():
     return _PointerTester()
 
@@ -101,7 +123,49 @@ def array_tester():
     return _ArrayTester()
 
 
-class _Tester():
+class _InterfaceTester():
+    def __init__(self):
+        self.node = MagicMock()
+        self.children = []
+        self.node.get_children.return_value = self.children
+
+    def with_pure_virtual_method(self):
+        self._add_child(self._Node(is_method=True, is_pure_virtual=True))
+        return self
+
+    def with_virtual_method(self):
+        self._add_child(self._Node(is_method=True, is_pure_virtual=False))
+        return self
+
+    def with_method(self):
+        self._add_child(self._Node(is_method=True, is_pure_virtual=False))
+        return self
+
+    def with_unknown(self):
+        self._add_child(self._Node(is_method=False, is_pure_virtual=False))
+        return self
+
+    def test(self):
+        return is_interface_class(self.node)
+
+    def _add_child(self, child):
+        self.children.append(child)
+        self.node.get_children.return_value = self.children
+
+    class _Node:
+        def __init__(self, is_method=True, is_pure_virtual=True):
+            self.is_method = is_method
+            self.is_pure_virtual = is_pure_virtual
+            if is_method:
+                self.kind = CursorKind.CXX_METHOD
+            else:
+                self.kind = CursorKind.VAR_DECL
+
+        def is_pure_virtual_method(self):
+            return self.is_pure_virtual
+
+
+class _VariableTester():
     def __init__(self):
         self.node = MagicMock()
         self.with_type(TypeKind.INVALID)
@@ -132,7 +196,7 @@ class _Tester():
         return self
 
 
-class _PointerTester(_Tester):
+class _PointerTester(_VariableTester):
 
     def with_smart_pointer_variable(self):
         self.with_kind(CursorKind.VAR_DECL)
@@ -150,7 +214,7 @@ class _PointerTester(_Tester):
         return is_pointer(self.node)
 
 
-class _ArrayTester(_Tester):
+class _ArrayTester(_VariableTester):
 
     def with_smart_array_variable(self):
         self.with_kind(CursorKind.VAR_DECL)
