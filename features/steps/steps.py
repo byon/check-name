@@ -22,8 +22,8 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import analysis
-import ast
+import steps.analysis as analysis
+import steps.ast as ast
 from test import eq_, match_
 
 import os
@@ -44,8 +44,8 @@ def source_file_does_not_exist(context):
 
 @given('source with reference variable "{name}"')
 def source_with_reference_variable(context, name):
-    context.ast.add_child(ast.Variable('referenced'))
-    context.ast.add_child(ast.ReferenceVariable(name, 'referenced'))
+    referenced = _ensure_variable_exists(context.ast, 'referenced')
+    context.ast.add_child(ast.ReferenceVariable(name, referenced))
 
 
 @given('source with {type} "{name}"')
@@ -167,8 +167,12 @@ def _mandatory_options(path):
 
 def _ensure_variable_exists(parent, name):
     actual_name = name
-    if parent.__class__ == ast.Class:
+    if isinstance(parent, ast.Class):
         actual_name += 'M'
+    elif isinstance(parent, ast.TranslationUnit):
+        actual_name += 'G'
+    else:
+        print('it is not either')
     parent.add_child(ast.Variable(actual_name))
     return actual_name
 

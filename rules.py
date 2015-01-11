@@ -60,6 +60,7 @@ def identify_rules_for_variables(node):
     result.add_postfix_rule(None, 'M', identification.is_member)
     result.add_postfix_rule(None, 'P', identification.is_parameter)
     result.add_postfix_rule('static', 'S', identification.is_static)
+    result.add_postfix_rule('global', 'G', identification.is_global)
     return [result]
 
 

@@ -109,3 +109,28 @@ Scenario Outline: Succeeding analysis
   | variableP  | pointer   | prefix "p"           |
   | pVariableP |           | redundant prefix "p" |
   | pVariable  | pointer   | postfix "P"          |
+
+  Scenario Outline: Succeeding global variable analysis
+    Given source with <type> variable "<name>"
+    When analysis is made
+    Then analysis should report no rule violations
+
+  Examples: Names that follow the rules
+  | type      | name       |
+  |           | variableG  |
+  | reference | rVariableG |
+  | pointer   | pVariableG |
+
+  Scenario Outline: Failing global variable analysis
+    Given source with <type> variable "<name>"
+    When analysis is made
+    Then analysis reports "variable" "<name>" as "<rule>" rule violation
+
+  Examples: Names that break the rules
+  | name       | type    | rule                 |
+  | VariableG  |         | headlessCamelCase    |
+  | variable   |         | postfix "G"          |
+  | variableG  | array   | prefix "a"           |
+  | variableG  | pointer | prefix "p"           |
+  | aVariableG |         | redundant prefix "a" |
+  | aVariable  | array   | postfix "G"          |

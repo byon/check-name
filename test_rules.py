@@ -146,6 +146,13 @@ def test_s_postfix_rule_for_static_variables(identify_rules_tester,
         'static', 'S', identification.is_static)
 
 
+def test_g_postfix_rule_for_global_variables(identify_rules_tester,
+                                             affixed_rule):
+    identify_rules_tester.with_kind(CursorKind.VAR_DECL).test()
+    affixed_rule.add_postfix_rule.assert_any_call(
+        'global', 'G', identification.is_global)
+
+
 def test_constant_should_have_screaming_snake_case_rule(identify_rules_tester):
     result = identify_rules_tester.with_constant_variable().test()
     assert rules.ScreamingSnakeCaseRule in _rule_types(result)

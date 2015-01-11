@@ -49,6 +49,12 @@ def is_member(node):
     return CursorKind.FIELD_DECL == node.kind
 
 
+def is_global(node):
+    parent = node.lexical_parent.kind
+    return (parent == CursorKind.NAMESPACE or
+            parent == CursorKind.TRANSLATION_UNIT)
+
+
 def is_method(node):
     return CursorKind.CXX_METHOD == node.kind
 
