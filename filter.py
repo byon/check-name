@@ -29,11 +29,15 @@ def should_filter(options, path):
     include_directories, exclude_directories = options
     if _is_in_directories(path, _library_directories()):
         return True
-    if not include_directories:
-        return False
-    if not _is_in_directories(path, include_directories):
+    if not _is_path_acceptable_by_include_options(path, include_directories):
         return True
     return _is_in_directories(path, exclude_directories)
+
+
+def _is_path_acceptable_by_include_options(path, include_directories):
+    if not include_directories:
+        return True
+    return _is_in_directories(path, include_directories)
 
 
 def _is_in_directories(path, directories):

@@ -53,6 +53,11 @@ def test_exclude_directories_should_be_filtered(tester):
     assert tester.test('a/b/file.cpp') is True
 
 
+def test_exclude_directories_are_filtered_even_without_includes(tester):
+    tester.with_exclude_directory('a')
+    assert tester.test('a/file.cpp') is True
+
+
 def test_directory_is_in_itself():
     assert filter._is_in_directory('a', 'a') is True
 
