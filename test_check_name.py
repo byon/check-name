@@ -57,35 +57,41 @@ def test_analysis_will_add_clang_builtin_headers_as_include_path(tester):
     assert 'path/clang/3.6.0/include/' in passed_options
 
 
+def test_analysis_will_add_clang_builtin_headers_as_filtering_option(tester):
+    tester.with_llvm_path('path').test()
+    assert 'path/clang/3.6.0/include/' in tester.exclude_options_for_analyser
+
+
 def test_analysis_is_done(tester):
     tester.test()
-    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
-                                            ([], []))
+    assert tester.analyser.call_count == 1
+    assert tester.output_for_analyser == tester.output
+    assert tester.translation_unit_for_analyser == tester.parse_result
 
 
 def test_passing_include_directory_to_analysis(tester):
     tester.with_include_directory('a').test()
-    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
-                                            (['a'], []))
+    assert 'a' in tester.include_options_for_analyser
 
 
 def test_passing_multiple_include_directories_to_analysis(tester):
     tester.with_include_directory('a').with_include_directory('b').test()
-    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
-                                            (['a', 'b'], []))
+    assert 'a' in tester.include_options_for_analyser
+    assert 'b' in tester.include_options_for_analyser
 
 
 def test_passing_exclude_directory_to_analysis(tester):
     tester.with_exclude_directory('a').test()
-    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
-                                            ([], ['a']))
+    assert 'a' in tester.exclude_options_for_analyser
 
 
 def test_passing_include_and_exclude_directories_to_analysis(tester):
     tester.with_include_directory('a').with_include_directory('b')
     tester.with_exclude_directory('c').with_exclude_directory('d').test()
-    tester.analyser.assert_called_once_with(tester.output, tester.parse_result,
-                                            (['a', 'b'], ['c', 'd']))
+    assert 'a' in tester.include_options_for_analyser
+    assert 'b' in tester.include_options_for_analyser
+    assert 'c' in tester.exclude_options_for_analyser
+    assert 'd' in tester.exclude_options_for_analyser
 
 
 def test_missing_source_file_is_an_error(tester):
@@ -185,6 +191,22 @@ class _Tester:
 
     def test(self):
         return check_name.main(self._build_argument_list())
+
+    @property
+    def output_for_analyser(self):
+        return self.analyser.call_args[0][0]
+
+    @property
+    def translation_unit_for_analyser(self):
+        return self.analyser.call_args[0][1]
+
+    @property
+    def include_options_for_analyser(self):
+        return self.analyser.call_args[0][2][0]
+
+    @property
+    def exclude_options_for_analyser(self):
+        return self.analyser.call_args[0][2][1]
 
     def _build_argument_list(self):
         arguments = ['executable']

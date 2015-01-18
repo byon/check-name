@@ -99,7 +99,9 @@ def report_diagnostics(output, diagnostics):
 
 
 def filtering_options(options):
-    return (_option_as_list(options.include), _option_as_list(options.exclude))
+    builtin_path = _built_in_header_path(options.llvm_path)
+    excludes = [builtin_path] + _option_as_list(options.exclude)
+    return (_option_as_list(options.include), excludes)
 
 
 def _clang_options(all_options):
