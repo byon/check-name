@@ -91,6 +91,10 @@ def is_reference(node):
     return TypeKind.LVALUEREFERENCE == node.type.kind
 
 
+def is_typedef_declaration(type):
+    return type.kind == CursorKind.TYPEDEF_DECL
+
+
 def is_pointer(node):
     return (is_pure_pointer(node) or is_smart_pointer(node)
             or is_array_pointer(node))

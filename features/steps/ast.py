@@ -124,6 +124,11 @@ class PreprocessorCondition(_Node):
                        '#endif\n')
 
 
+class Typedef(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'typedef int ' + name + ';', '\n')
+
+
 class PureVirtualMethod(_Node):
     def __init__(self, name):
         _Node.__init__(self, name, 'virtual void ' + name + '() = 0;\n', '')

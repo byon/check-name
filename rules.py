@@ -40,6 +40,8 @@ def identify_rules(node):
         return identify_rules_for_class(node)
     if identification.is_struct(node):
         return [CamelCaseRule('struct')]
+    if identification.is_typedef_declaration(node):
+        return [CamelCaseRule('typedef')]
     return []
 
 

@@ -204,6 +204,7 @@ def _identify_type(name):
                 'static_variable': ast.StaticVariable,
                 'struct': ast.Struct,
                 'reference_variable': ast.ReferenceVariable,
+                'typedef': ast.Typedef,
                 'variable': ast.Variable}
     return type_map[name.strip().replace(' ', '_').lower()]
 
