@@ -118,6 +118,12 @@ class AbstractClass(Class):
         self.add_child(Method('someMethod'))
 
 
+class TemplateClass(_Node):
+    def __init__(self, name, parameter):
+        start = 'template <typename ' + parameter + '>\nclass ' + name + ' {\n'
+        _Node.__init__(self, name, start, '};\n')
+
+
 class PreprocessorCondition(_Node):
     def __init__(self, condition):
         _Node.__init__(self, condition, '#ifdef ' + condition + '\n',

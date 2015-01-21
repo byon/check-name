@@ -27,3 +27,13 @@ Feature: Analysing class names
   | class           | ThereShouldNotBeAbs | redundant postfix "Abs" |
   | interface class | WrongPostfixAbs     | postfix "If"            |
   | abstract class  | TotallyIncorrectIf  | postfix "Abs"           |
+
+  Scenario: Template classes should be in CamelCase
+    Given source with template class "CamelCase" with type parameter "A"
+    When analysis is made
+    Then analysis should succeed
+
+  Scenario: Template classes are required to be in CamelCase
+    Given source with template class "foo" with type parameter "A"
+    When analysis is made
+    Then analysis reports "class" "foo" as "CamelCase" rule violation

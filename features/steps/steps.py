@@ -48,6 +48,11 @@ def source_with_reference_variable(context, name):
     context.ast.add_child(ast.ReferenceVariable(name, referenced))
 
 
+@given('source with template class "{name}" with type parameter "{parameter}"')
+def source_with_template_class_type(context, name, parameter):
+    context.ast.add_child(ast.TemplateClass(name, parameter))
+
+
 @given('source with {type} "{name}"')
 def source_with_type(context, type, name):
     context.ast.add_child(_create_node(type, name))

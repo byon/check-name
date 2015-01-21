@@ -27,7 +27,8 @@ import re
 
 
 def is_class(node):
-    return CursorKind.CLASS_DECL == node.kind
+    return (CursorKind.CLASS_DECL == node.kind or
+            CursorKind.CLASS_TEMPLATE == node.kind)
 
 
 def is_interface_class(node):

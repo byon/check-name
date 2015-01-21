@@ -83,6 +83,11 @@ def test_abstract_class_should_have_abs_postfix(identify_rules_tester):
     assert any(match(r) for r in _rules_of_type(result, rules.PostFixRule))
 
 
+def test_template_class_should_have_camel_case_rule(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.CLASS_TEMPLATE).test()
+    assert rules.CamelCaseRule in _rule_types(result)
+
+
 def test_identifying_class():
     result = rules.identify_rules_for_class(_Node(CursorKind.CLASS_DECL))
     assert rules.CamelCaseRule in _rule_types(result)
