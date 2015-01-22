@@ -47,3 +47,13 @@ Feature: Analysing class names
     Given source with template class "A" with type parameter "a"
     When analysis is made
     Then analysis reports "template type parameter" "a" as "CamelCase" rule violation
+
+  Scenario: Template non-type parameters should be in SCREAMING_SNAKE_CASE
+    Given source with template class "A" with non-type parameter "BLOODY_MURDER"
+    When analysis is made
+    Then analysis should succeed
+
+  Scenario: Template non-type parameters are required to be in SCREAMING_SNAKE_CASE
+    Given source with template class "A" with non-type parameter "a"
+    When analysis is made
+    Then analysis reports "template non-type parameter" "a" as "SCREAMING_SNAKE_CASE" rule violation

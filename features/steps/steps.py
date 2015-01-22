@@ -50,7 +50,12 @@ def source_with_reference_variable(context, name):
 
 @given('source with template class "{name}" with type parameter "{parameter}"')
 def source_with_template_class_type(context, name, parameter):
-    context.ast.add_child(ast.TemplateClass(name, parameter))
+    context.ast.add_child(ast.TemplateClass(name, parameter, None))
+
+
+@given('source with template class "{name}" with non-type parameter "{non}"')
+def source_with_template_class_with_nontype_parameter(context, name, non):
+    context.ast.add_child(ast.TemplateClass(name, None, non))
 
 
 @given('source with {type} "{name}"')

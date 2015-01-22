@@ -119,9 +119,15 @@ class AbstractClass(Class):
 
 
 class TemplateClass(_Node):
-    def __init__(self, name, parameter):
-        start = 'template <typename ' + parameter + '>\nclass ' + name + ' {\n'
+    def __init__(self, name, parameter, non_type):
+        parameters = self._build_parameters(parameter, non_type)
+        start = 'template <' + parameters + '>\nclass ' + name + ' {\n'
         _Node.__init__(self, name, start, '};\n')
+
+    def _build_parameters(self, parameter, non_type):
+        first = ['typename ' + parameter] if parameter else []
+        second = ['int ' + non_type] if non_type else []
+        return ', '.join(first + second)
 
 
 class PreprocessorCondition(_Node):

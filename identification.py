@@ -80,6 +80,10 @@ def is_template_type_parameter(node):
     return CursorKind.TEMPLATE_TYPE_PARAMETER == node.kind
 
 
+def is_template_non_type_parameter(node):
+    return CursorKind.TEMPLATE_NON_TYPE_PARAMETER == node.kind
+
+
 def is_any_kind_of_variable(node):
     return is_member(node) or is_variable(node) or is_parameter(node)
 
