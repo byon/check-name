@@ -47,7 +47,8 @@ def is_abstract_class(node):
 
 
 def is_function(node):
-    return CursorKind.FUNCTION_DECL == node.kind
+    return (CursorKind.FUNCTION_DECL == node.kind or
+            CursorKind.FUNCTION_TEMPLATE == node.kind)
 
 
 def is_static(node):

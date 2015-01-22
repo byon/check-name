@@ -10,3 +10,8 @@ Feature: Analysing method and function names
     Given source with function "Foo"
     When analysis is made
     Then analysis reports "function" "Foo" as "headlessCamelCase" rule violation
+
+  Scenario: Function templates not in headlessCamelCase are reported
+    Given source with template function "Foo"
+    When analysis is made
+    Then analysis reports "function" "Foo" as "headlessCamelCase" rule violation
