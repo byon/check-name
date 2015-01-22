@@ -36,6 +36,8 @@ def identify_rules(node):
         return [HeadlessCamelCaseRule('method')]
     if identification.is_function(node):
         return [HeadlessCamelCaseRule('function')]
+    if identification.is_template_type_parameter(node):
+        return [CamelCaseRule('template type parameter')]
     if identification.is_class(node):
         return identify_rules_for_class(node)
     if identification.is_struct(node):

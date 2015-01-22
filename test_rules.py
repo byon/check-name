@@ -88,6 +88,13 @@ def test_template_class_should_have_camel_case_rule(identify_rules_tester):
     assert rules.CamelCaseRule in _rule_types(result)
 
 
+def test_template__parameter_should_have_camel_case_rule(
+        identify_rules_tester):
+    type = CursorKind.TEMPLATE_TYPE_PARAMETER
+    result = identify_rules_tester.with_kind(type).test()
+    assert rules.CamelCaseRule in _rule_types(result)
+
+
 def test_identifying_class():
     result = rules.identify_rules_for_class(_Node(CursorKind.CLASS_DECL))
     assert rules.CamelCaseRule in _rule_types(result)

@@ -37,3 +37,13 @@ Feature: Analysing class names
     Given source with template class "foo" with type parameter "A"
     When analysis is made
     Then analysis reports "class" "foo" as "CamelCase" rule violation
+
+  Scenario: Template type parameters should be in CamelCase
+    Given source with template class "A" with type parameter "CamelCase"
+    When analysis is made
+    Then analysis should succeed
+
+  Scenario: Template type parameters are required to be in CamelCase
+    Given source with template class "A" with type parameter "a"
+    When analysis is made
+    Then analysis reports "template type parameter" "a" as "CamelCase" rule violation
