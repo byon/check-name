@@ -26,7 +26,7 @@ import re
 
 
 def is_camel_case(name):
-    return True if re.match('^([A-Z][a-z]+\d*)+$', name) else False
+    return True if re.match('^([A-Z]|([A-Z][a-z]+\d*)+)$', name) else False
 
 
 def is_headless_camel_case(name):

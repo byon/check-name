@@ -29,6 +29,10 @@ def test_recognizing_camel_case_with_one_part():
     assert case_rules.is_camel_case('Foo')
 
 
+def test_recognizing_camel_case_with_single_letter():
+    assert case_rules.is_camel_case('F')
+
+
 def test_recognizing_camel_case_with_multiple_parts():
     assert case_rules.is_camel_case('FooBar')
 
