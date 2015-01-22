@@ -40,6 +40,8 @@ def identify_rules(node):
         return [CamelCaseRule('template type parameter')]
     if identification.is_template_non_type_parameter(node):
         return [ScreamingSnakeCaseRule('template non-type parameter')]
+    if identification.is_template_template_parameter(node):
+        return [CamelCaseRule('template template parameter')]
     if identification.is_class(node):
         return identify_rules_for_class(node)
     if identification.is_struct(node):
