@@ -132,7 +132,7 @@ class ConditionalRule(Rule):
 
 
 class CamelCaseRule(Rule):
-    def __init__(self, identifier, prefix_size=0, postfix_size=0):
+    def __init__(self, identifier):
         Rule.__init__(self, identifier, 'is not in CamelCase',
                       case_rules.is_camel_case)
 
