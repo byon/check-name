@@ -37,9 +37,9 @@ def identify_rules(node):
     if identification.is_function(node):
         return [HeadlessCamelCaseRule('function')]
     if identification.is_template_type_parameter(node):
-        return [CamelCaseRule('template type parameter')]
+        return [CamelCaseRule('template type parameter', True)]
     if identification.is_template_non_type_parameter(node):
-        return [ScreamingSnakeCaseRule('template non-type parameter')]
+        return [ScreamingSnakeCaseRule('template non-type parameter', True)]
     if identification.is_template_template_parameter(node):
         return [CamelCaseRule('template template parameter')]
     if identification.is_class(node):
@@ -96,12 +96,16 @@ class Error:
 
 
 class Rule:
-    def __init__(self, type_name, error_description, rule_test=None):
+    def __init__(self, type_name, error_description, rule_test=None,
+                 allow_empty=False):
         self.type_name = type_name
         self.error_description = error_description
         self.rule_test = rule_test
+        self.allow_empty = allow_empty
 
     def test(self, node):
+        if self.allow_empty and not node.spelling:
+            return []
         if self.rule_test(node.spelling):
             return []
         return [Error(self.type_name, node.spelling, self.error_description)]
@@ -132,9 +136,9 @@ class ConditionalRule(Rule):
 
 
 class CamelCaseRule(Rule):
-    def __init__(self, identifier):
+    def __init__(self, identifier, allow_empty=False):
         Rule.__init__(self, identifier, 'is not in CamelCase',
-                      case_rules.is_camel_case)
+                      case_rules.is_camel_case, allow_empty)
 
 
 class HeadlessCamelCaseRule(Rule):
@@ -145,10 +149,10 @@ class HeadlessCamelCaseRule(Rule):
 
 
 class ScreamingSnakeCaseRule(Rule):
-    def __init__(self, identifier):
+    def __init__(self, identifier, allow_empty=False):
         description = 'is not in SCREAMING_SNAKE_CASE'
         Rule.__init__(self, identifier, description,
-                      case_rules.is_screaming_snake_case)
+                      case_rules.is_screaming_snake_case, allow_empty)
 
 
 class PostFixRule(ConditionalRule):

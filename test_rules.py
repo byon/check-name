@@ -92,14 +92,16 @@ def test_template_parameter_should_have_camel_case_rule(
         identify_rules_tester):
     type = CursorKind.TEMPLATE_TYPE_PARAMETER
     result = identify_rules_tester.with_kind(type).test()
-    assert rules.CamelCaseRule in _rule_types(result)
+    identified_rule = _rule_of_type(result, rules.CamelCaseRule)
+    assert identified_rule.allow_empty is True
 
 
-def test_template_non_type_parameter_should_have_camel_case_rule(
+def test_template_non_type_parameter_should_have_screaming_snake_rule(
         identify_rules_tester):
     type = CursorKind.TEMPLATE_NON_TYPE_PARAMETER
     result = identify_rules_tester.with_kind(type).test()
-    assert rules.ScreamingSnakeCaseRule in _rule_types(result)
+    identified_rule = _rule_of_type(result, rules.ScreamingSnakeCaseRule)
+    assert identified_rule.allow_empty is True
 
 
 def test_template_template_parameter_should_have_camel_case_rule(
@@ -215,7 +217,13 @@ def test_noticing_rule_failure():
 
 def test_noticing_rule_success():
     test = MagicMock(return_value=True)
-    assert [] == rules.Rule('', '', test).test(_Node(name=''))
+    assert [] == rules.Rule('', '', test).test(_Node(name='something'))
+
+
+def test_allowing_empty_name():
+    test = MagicMock(return_value=False)
+    rule = rules.Rule('', '', test, allow_empty=True)
+    assert [] == rule.test(_Node(name=''))
 
 
 def test_construction_of_conditional_rule():
