@@ -39,6 +39,19 @@ class _Node:
         self.children.append(child)
         self._open_child = child
 
+    def add_child_to_type(self, child_to_add, required_type):
+        is_type = lambda n: isinstance(n, required_type)
+        assert self._add_child_based_on_condition(child_to_add, is_type)
+
+    def _add_child_based_on_condition(self, child_to_add, condition):
+        if condition(self):
+            self.add_child(child_to_add)
+            return True
+        for child in reversed(self.children):
+            if child._add_child_based_on_condition(child_to_add, condition):
+                return True
+        return False
+
     def require_include_statement(self, to_include):
         statement = '#include <' + to_include + '>'
         self.include_statements.add(statement)
@@ -108,14 +121,14 @@ class Struct(_Node):
 class InterfaceClass(Class):
     def __init__(self, name):
         Class.__init__(self, name)
-        self.add_child(PureVirtualMethod('pureVirtualMethod'))
+        self.add_child(PureVirtualMethodDeclaration('pureVirtualMethod'))
 
 
 class AbstractClass(Class):
     def __init__(self, name):
         Class.__init__(self, name)
-        self.add_child(PureVirtualMethod('pureVirtualMethod'))
-        self.add_child(Method('someMethod'))
+        self.add_child(PureVirtualMethodDeclaration('pureVirtualMethod'))
+        self.add_child(MethodDeclaration('someMethod'))
 
 
 class TemplateClass(_Node):
@@ -141,42 +154,48 @@ class Typedef(_Node):
         _Node.__init__(self, name, 'typedef int ' + name + ';', '\n')
 
 
-class PureVirtualMethod(_Node):
+class PureVirtualMethodDeclaration(_Node):
     def __init__(self, name):
         _Node.__init__(self, name, 'virtual void ' + name + '() = 0;\n', '')
 
 
-class FunctionImplementation(_Node):
+class FunctionPrototype(_Node):
     def __init__(self, name):
-        _Node.__init__(self, name, 'void ' + name + '()\n{\n', '}')
+        _Node.__init__(self, name, 'void ' + name + '(', ')')
+
+
+class FunctionDeclaration(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, 'declaration', '', ';')
+        self.add_child(FunctionPrototype(name))
+
+
+class Block(_Node):
+    def __init__(self):
+        _Node.__init__(self, 'block', '{\n', '}\n')
 
 
 class Function(_Node):
     def __init__(self, name):
-        _Node.__init__(self, name, 'void ' + name + '(', ');\n')
-        self.parameters = []
-
-    def add_child(self, child):
-        assert issubclass(child.__class__, Parameter)
-        self.parameters.append(child)
-
-    def generate(self):
-        assert not self.children
-        result = self.start
-        result += ', '.join([p.generate() for p in self.parameters])
-        result += self.end
-        return result
+        _Node.__init__(self, name, '', '')
+        self.add_child(FunctionPrototype(name))
+        self.add_child(Block())
 
 
 class TemplateFunction(_Node):
     def __init__(self, name):
         start = 'template <typename T>\nvoid ' + name + '('
-        _Node.__init__(self, name, start, ');\n')
+        _Node.__init__(self, name, start, ')\n{\n}\n')
 
 
-# Currently Method is exactly the same as Function
 class Method(Function):
-    pass
+    def __init__(self, name):
+        Function.__init__(self, name)
+
+
+class MethodDeclaration(FunctionDeclaration):
+    def __init__(self, name):
+        FunctionDeclaration.__init__(self, name)
 
 
 class Constructor(_Node):

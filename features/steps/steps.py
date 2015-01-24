@@ -72,7 +72,11 @@ def contains_reference_variable(context, name):
 
 @given('nested {type} "{name}"')
 def contains_type(context, type, name):
-    context.ast.open_child.add_child(_create_node(type, name))
+    node = _create_node(type, name)
+    if 'parameter' in type:
+        context.ast.add_child_to_type(node, ast.FunctionPrototype)
+        return
+    context.ast.open_child.add_child(node)
 
 
 @given('source file with a syntax warning')
@@ -199,7 +203,6 @@ def _identify_type(name):
                 'class': ast.Class,
                 'constant_variable': ast.Variable,
                 'function': ast.Function,
-                'function_implementation': ast.FunctionImplementation,
                 'interface_class': ast.InterfaceClass,
                 'method': ast.Method,
                 'namespace': ast.Namespace,
@@ -209,7 +212,7 @@ def _identify_type(name):
                 'pointer_variable': ast.PointerVariable,
                 'pointer_array_variable': ast.PointerArrayVariable,
                 'preprocessor_condition': ast.PreprocessorCondition,
-                'pure_virtual_method': ast.PureVirtualMethod,
+                'pure_virtual_method': ast.PureVirtualMethodDeclaration,
                 'smart_pointer_variable': ast.SmartPointerVariable,
                 'static_variable': ast.StaticVariable,
                 'struct': ast.Struct,
