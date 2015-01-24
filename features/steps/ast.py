@@ -172,7 +172,6 @@ class TemplateFunction(_Node):
     def __init__(self, name):
         start = 'template <typename T>\nvoid ' + name + '('
         _Node.__init__(self, name, start, ');\n')
-        self.parameters = []
 
 
 # Currently Method is exactly the same as Function
