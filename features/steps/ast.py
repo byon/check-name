@@ -113,6 +113,11 @@ class Class(_Node):
         _Node.__init__(self, name, 'class ' + name + ' {\n', '};\n')
 
 
+class ClassDeclaration(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, 'class ' + name, ';\n')
+
+
 class Struct(_Node):
     def __init__(self, name):
         _Node.__init__(self, name, 'struct ' + name + ' {\n', '};\n')

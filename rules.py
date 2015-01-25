@@ -29,7 +29,8 @@ import affixed_name_rule
 
 def identify_rules(node):
     if identification.is_namespace(node):
-        return [CamelCaseRule('namespace')]
+        return [ConditionalRule(CamelCaseRule('namespace'),
+                                _does_namespace_have_definitions)]
     if identification.is_any_kind_of_variable(node):
         return identify_rules_for_variables(node)
     if identification.is_method(node):
@@ -105,6 +106,17 @@ class Rule:
         return [Error(self.type_name, node.spelling, self.error_description)]
 
 
+class ConditionalRule:
+    def __init__(self, actual_rule, condition):
+        self.actual_rule = actual_rule
+        self.condition = condition
+
+    def test(self, node):
+        if not self.condition(node):
+            return []
+        return self.actual_rule.test(node)
+
+
 class InvertibleRule(Rule):
     def __init__(self, type_name, original_description, inverted_description,
                  rule_test, condition=None):
@@ -177,3 +189,15 @@ def _variable_base_name(node):
     if identification.is_parameter(node):
         return 'parameter'
     assert False, 'unidentified variable type'
+
+
+def _does_namespace_have_definitions(node):
+    return any(_has_definitions(c) for c in node.get_children())
+
+
+def _has_definitions(node):
+    if identification.is_namespace(node):
+        return _does_namespace_have_definitions(node)
+    if identification.is_class(node):
+        return node.is_definition()
+    return True

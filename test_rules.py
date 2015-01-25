@@ -35,9 +35,16 @@ def test_unidentified_node_will_have_no_rules(identify_rules_tester):
     assert not identify_rules_tester.test()
 
 
+def test_namespace_should_be_conditional_on_having_children(
+        identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.NAMESPACE).test()
+    rule = _rule_of_type(result, rules.ConditionalRule)
+    assert rule.condition == rules._does_namespace_have_definitions
+
+
 def test_namespace_should_have_camel_case_rule(identify_rules_tester):
     result = identify_rules_tester.with_kind(CursorKind.NAMESPACE).test()
-    assert rules.CamelCaseRule in _rule_types(result)
+    assert rules.CamelCaseRule == result[0].actual_rule.__class__
 
 
 def test_method_should_have_headless_camel_case_rule(identify_rules_tester):
@@ -298,6 +305,53 @@ def test_existing_postfix_is_success():
     assert [] == rules.PostFixRule('', 'P').test(_Node(name='nameP'))
 
 
+def test_conditional_rule_test_is_skipped_when_condition_is_false():
+    actual_rule = rules.Rule('', 'cause', lambda _: False)
+    rule = rules.ConditionalRule(actual_rule, lambda _: False)
+    assert [] == rule.test(_Node(name=''))
+
+
+def test_conditional_rule_test_applies_when_condition_is_true():
+    actual_rule = rules.Rule('', 'cause', lambda _: False)
+    rule = rules.ConditionalRule(actual_rule, lambda _: True)
+    assert [rules.Error('', '', 'cause')] == rule.test(_Node(name=''))
+
+
+def test_empty_namespace_has_no_definitions(namespace_tester):
+    assert False == namespace_tester.with_no_children().test()
+
+
+def test_namespace_with_one_variable_has_definitions(namespace_tester):
+    assert True == namespace_tester.with_kind(CursorKind.VAR_DECL).test()
+
+
+def test_namespace_with_empty_namespace_has_no_definitions(namespace_tester):
+    assert False == namespace_tester.with_kind(CursorKind.NAMESPACE).test()
+
+
+def test_namespace_with_class_declaration_has_no_definitions(namespace_tester):
+    assert False == namespace_tester.with_class_declaration().test()
+
+
+def test_namespace_with_class_definition_has_definitions(namespace_tester):
+    assert True == namespace_tester.with_class_definition().test()
+
+
+def test_definition_in_nested_namespace_is_recognized(namespace_tester):
+    result = namespace_tester.with_definition_in_nested_namespace().test()
+    assert True == result
+
+
+def test_recognizing_variable_after_class_declaration(namespace_tester):
+    namespace_tester.with_class_declaration()
+    assert True == namespace_tester.with_kind(CursorKind.VAR_DECL).test()
+
+
+def test_recognizing_variable_after_namespace(namespace_tester):
+    namespace_tester.with_kind(CursorKind.NAMESPACE)
+    assert True == namespace_tester.with_kind(CursorKind.VAR_DECL).test()
+
+
 @pytest.fixture
 def identify_rules_tester():
     return _IdentifyRulesTester()
@@ -313,8 +367,14 @@ def affixed_rule(request):
     return result
 
 
+@pytest.fixture
+def namespace_tester():
+    return _NamespaceTester()
+
+
 class _Node:
-    def __init__(self, kind=None, name=None, is_constant=False):
+    def __init__(self, kind=None, name=None, is_constant=False,
+                 is_definition=False):
         self.kind = MagicMock()
         self.kind.__eq__.side_effect = lambda k: k == kind
         self.spelling = name if name else ''
@@ -322,12 +382,16 @@ class _Node:
         self.children = []
         self.type = MagicMock()
         self.type.is_const_qualified.return_value = is_constant
+        self._is_definition = is_definition
 
     def add_child(self, child):
         self.children.append(child)
 
     def get_children(self):
-        return self.children
+        return iter(self.children)
+
+    def is_definition(self):
+        return self._is_definition
 
 
 class _Method(_Node):
@@ -379,6 +443,40 @@ class _IdentifyRulesTester:
     def with_constant_variable(self):
         self.node = _Node(CursorKind.VAR_DECL, is_constant=True)
         return self
+
+
+class _NamespaceTester:
+    def __init__(self):
+        self.node = _Node(name='')
+
+    def with_no_children(self):
+        self.node = _Node(name='')
+        return self
+
+    def with_child(self, child):
+        self.node.add_child(child)
+        return self
+
+    def with_kind(self, kind):
+        return self.with_child(_Node(kind))
+
+    def with_class_declaration(self):
+        declaration = _Node(CursorKind.CLASS_DECL, is_definition=False)
+        return self.with_child(declaration)
+
+    def with_class_definition(self):
+        definition = _Node(CursorKind.CLASS_DECL, is_definition=True)
+        return self.with_child(definition)
+
+    def with_definition_in_nested_namespace(self):
+        nested = _Node(CursorKind.NAMESPACE)
+        nested.add_child(_Node(CursorKind.CLASS_DECL, is_definition=True))
+        root = _Node(CursorKind.NAMESPACE)
+        root.add_child(nested)
+        return self.with_child(root)
+
+    def test(self):
+        return rules._does_namespace_have_definitions(self.node)
 
 
 def _rule_types(rules):

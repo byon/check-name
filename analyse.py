@@ -34,7 +34,7 @@ def analyse_nodes(output, node, filter_options, root=True):
     if not root:
         if filter.should_filter(filter_options, node.location.file.name):
             return
-        if node.kind.is_declaration():
+        if node.kind.is_declaration() and node.is_definition():
             analyse_node(output, node)
     for child in node.get_children():
         analyse_nodes(output, child, filter_options, False)

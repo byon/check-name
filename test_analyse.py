@@ -42,8 +42,13 @@ def test_analysing_one_node(translation_unit, analyser):
     analyser.assert_called_once_with(output, namespace)
 
 
-def test_only_declarations_are_analysed(analyse_nodes_tester):
+def test_non_declarations_are_not_analysed(analyse_nodes_tester):
     analyse_nodes_tester.with_non_declaration().test()
+    assert analyse_nodes_tester.analyser.call_count == 0
+
+
+def test_non_definitions_are_not_analysed(analyse_nodes_tester):
+    analyse_nodes_tester.with_non_definition().test()
     assert analyse_nodes_tester.analyser.call_count == 0
 
 
@@ -198,6 +203,10 @@ class _AnalyseNodesTester(_AnalyseTesterBase):
         self.root.new_non_declaration()
         return self
 
+    def with_non_definition(self):
+        self.root.new_non_definition()
+        return self
+
 
 class _AnalyseNodeTester(_AnalyseTesterBase):
     def __init__(self):
@@ -226,22 +235,23 @@ class _Node:
         self.kind = MagicMock()
         self.kind.__eq__.side_effect = lambda k: k == kind
         self.kind.is_declaration.return_value = False
+        self.is_definition = MagicMock()
+        self.is_definition.return_value = False
 
     @staticmethod
     def create_namespace(name):
-        return _Node.create_declaration(
-            clang.cindex.CursorKind.NAMESPACE, name)
+        return _Node.create_node(clang.cindex.CursorKind.NAMESPACE, name)
 
     @staticmethod
     def create_variable(name):
-        return _Node.create_declaration(
-            clang.cindex.CursorKind.VAR_DECL, name)
+        return _Node.create_node(clang.cindex.CursorKind.VAR_DECL, name)
 
     @staticmethod
-    def create_declaration(kind, name):
-        declaration = _Node(name, kind)
-        declaration.kind.is_declaration.return_value = True
-        return declaration
+    def create_node(kind, name):
+        node = _Node(name, kind)
+        node.kind.is_declaration.return_value = True
+        node.is_definition.return_value = True
+        return node
 
     def get_children(self):
         return iter(self.children)
@@ -257,9 +267,14 @@ class _Node:
                                 clang.cindex.CursorKind.TRANSLATION_UNIT)
         return self._add_child(lambda _: non_declaration)
 
+    def new_non_definition(self):
+        non_declaration = _Node('irrelevant',
+                                clang.cindex.CursorKind.CLASS_DECL)
+        return self._add_child(lambda _: non_declaration)
+
     def new_unrecognized_node(self):
         type = clang.cindex.CursorKind.UNEXPOSED_DECL
-        return self._add_child(_Node.create_declaration, type, 'irrelevant')
+        return self._add_child(_Node.create_node, type, 'irrelevant')
 
     def _new_node(self, type):
         node = _Node('irrelevant', type)

@@ -201,6 +201,7 @@ def _identify_type(name):
     type_map = {'abstract_class': ast.AbstractClass,
                 'array_variable': ast.ArrayVariable,
                 'class': ast.Class,
+                'class_declaration': ast.ClassDeclaration,
                 'constant_variable': ast.Variable,
                 'function': ast.Function,
                 'interface_class': ast.InterfaceClass,
