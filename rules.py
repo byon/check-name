@@ -161,10 +161,11 @@ class ScreamingSnakeCaseRule(Rule):
 class PostFixRule(ConditionalRule):
     def __init__(self, identifier, postfix, condition=None):
         self.postfix = postfix
-        ConditionalRule.__init__(self, identifier,
-                                 'does not have postfix "' + postfix + '"',
-                                 'has redundant postfix "' + postfix + '"',
-                                 lambda n: n.endswith(self.postfix),
+        missing_description = 'does not have postfix "' + postfix + '"'
+        redundant_description = 'has redundant postfix "' + postfix + '"',
+        postfix_test = lambda n: n.endswith(self.postfix)
+        ConditionalRule.__init__(self, identifier, missing_description,
+                                 redundant_description, postfix_test,
                                  condition)
 
 
