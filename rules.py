@@ -115,18 +115,27 @@ class ConditionalRule(Rule):
 
     def test(self, node):
         result = self.rule_test(node.spelling)
+        should_invert = self._should_invert_result(node)
+        if not self._is_error(result, should_invert):
+            return []
+        return self._report(node.spelling, should_invert)
+
+    def _is_error(self, result, should_invert):
         if result:
-            if self._should_invert_result(node):
-                return [Error(self.type_name, node.spelling,
-                              self.inverted_description)]
-        else:
-            if not self._should_invert_result(node):
-                return [Error(self.type_name, node.spelling,
-                              self.original_description)]
-        return []
+            return should_invert
+        return not should_invert
+
+    def _report(self, spelling, should_invert):
+        description = self._description(should_invert)
+        return [Error(self.type_name, spelling, description)]
 
     def _should_invert_result(self, node):
         return self.condition and not self.condition(node)
+
+    def _description(self, should_invert):
+        if should_invert:
+            return self.inverted_description
+        return self.original_description
 
 
 class CamelCaseRule(Rule):
