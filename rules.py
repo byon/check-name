@@ -74,12 +74,6 @@ def identify_rules_for_variables(node):
     return [result]
 
 
-def identify_case_rule(node, prefix_size, postfix_size):
-    if prefix_size > 0:
-        return CamelCaseRule('variable', prefix_size, postfix_size)
-    return HeadlessCamelCaseRule('variable', postfix_size)
-
-
 class Error:
     def __init__(self, type_name, failed_name, error_description):
         self.type_name = type_name
