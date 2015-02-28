@@ -1,0 +1,23 @@
+Feature: Analysing enumeration names
+
+  Scenario Outline: Succeeding analysis for enumeration names
+    Given source with enumeration "<name>"
+    When analysis is made
+    Then analysis should report no rule violations
+
+  Examples: Names that follow the rules
+  | name      |
+  | Hump      |
+  | CamelCase |
+
+  Scenario Outline: Failing analysis for enumeration names
+    Given source with enumeration "<name>"
+    When analysis is made
+    Then analysis reports "enumeration" "<name>" as "CamelCase" rule violation
+
+  Examples: Names that break the rules
+  | name                 |
+  | humpHump             |
+  | caseless             |
+  | snaky_snake          |
+  | SCREAM_BLOODY_MURDER |

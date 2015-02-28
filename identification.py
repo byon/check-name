@@ -46,6 +46,10 @@ def is_abstract_class(node):
             any(not m.is_pure_virtual_method() for m in methods))
 
 
+def is_enumeration_declaration(node):
+    return CursorKind.ENUM_DECL == node.kind
+
+
 def is_function(node):
     return (CursorKind.FUNCTION_DECL == node.kind or
             CursorKind.FUNCTION_TEMPLATE == node.kind)

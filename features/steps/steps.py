@@ -203,6 +203,7 @@ def _identify_type(name):
                 'class': ast.Class,
                 'class_declaration': ast.ClassDeclaration,
                 'constant_variable': ast.Variable,
+                'enumeration': ast.Enumeration,
                 'function': ast.Function,
                 'interface_class': ast.InterfaceClass,
                 'method': ast.Method,

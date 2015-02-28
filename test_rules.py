@@ -118,6 +118,11 @@ def test_template_template_parameter_should_have_camel_case_rule(
     assert rules.CamelCaseRule in _rule_types(result)
 
 
+def test_enum_declaration_should_have_camel_case_rule(identify_rules_tester):
+    result = identify_rules_tester.with_kind(CursorKind.ENUM_DECL).test()
+    assert rules.CamelCaseRule in _rule_types(result)
+
+
 def test_identifying_class():
     result = rules.identify_rules_for_class(_Node(CursorKind.CLASS_DECL))
     assert rules.CamelCaseRule in _rule_types(result)

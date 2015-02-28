@@ -49,6 +49,8 @@ def identify_rules(node):
         return [CamelCaseRule('struct')]
     if identification.is_typedef_declaration(node):
         return [CamelCaseRule('typedef')]
+    if identification.is_enumeration_declaration(node):
+        return [CamelCaseRule('enumeration')]
     return []
 
 
