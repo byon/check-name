@@ -113,6 +113,11 @@ class Enumeration(_Node):
         _Node.__init__(self, name, 'enum ' + name + '{\n', '};\n')
 
 
+class EnumerationConstant(_Node):
+    def __init__(self, name):
+        _Node.__init__(self, name, name, '')
+
+
 class Class(_Node):
     def __init__(self, name):
         _Node.__init__(self, name, 'class ' + name + ' {\n', '};\n')

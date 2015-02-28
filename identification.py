@@ -50,6 +50,10 @@ def is_enumeration_declaration(node):
     return CursorKind.ENUM_DECL == node.kind
 
 
+def is_enumeration_constant(node):
+    return CursorKind.ENUM_CONSTANT_DECL == node.kind
+
+
 def is_function(node):
     return (CursorKind.FUNCTION_DECL == node.kind or
             CursorKind.FUNCTION_TEMPLATE == node.kind)

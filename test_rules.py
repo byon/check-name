@@ -123,6 +123,13 @@ def test_enum_declaration_should_have_camel_case_rule(identify_rules_tester):
     assert rules.CamelCaseRule in _rule_types(result)
 
 
+def test_enum_constants_should_have_screaming_snake_case_rule(
+        identify_rules_tester):
+    type = CursorKind.ENUM_CONSTANT_DECL
+    result = identify_rules_tester.with_kind(type).test()
+    assert rules.ScreamingSnakeCaseRule in _rule_types(result)
+
+
 def test_identifying_class():
     result = rules.identify_rules_for_class(_Node(CursorKind.CLASS_DECL))
     assert rules.CamelCaseRule in _rule_types(result)

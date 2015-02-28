@@ -51,6 +51,8 @@ def identify_rules(node):
         return [CamelCaseRule('typedef')]
     if identification.is_enumeration_declaration(node):
         return [CamelCaseRule('enumeration')]
+    if identification.is_enumeration_constant(node):
+        return [ScreamingSnakeCaseRule('enumeration constant')]
     return []
 
 

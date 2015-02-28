@@ -192,7 +192,7 @@ def _ensure_variable_exists(parent, name):
 
 
 def _create_node(type, name):
-    if 'const' in type:
+    if 'constant variable' in type:
         return ast.Variable(name, type='const int', value='0')
     return _identify_type(type)(name)
 
@@ -204,6 +204,7 @@ def _identify_type(name):
                 'class_declaration': ast.ClassDeclaration,
                 'constant_variable': ast.Variable,
                 'enumeration': ast.Enumeration,
+                'enumeration_constant': ast.EnumerationConstant,
                 'function': ast.Function,
                 'interface_class': ast.InterfaceClass,
                 'method': ast.Method,
