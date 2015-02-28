@@ -105,7 +105,7 @@ class Rule:
         return [Error(self.type_name, node.spelling, self.error_description)]
 
 
-class ConditionalRule(Rule):
+class InvertibleRule(Rule):
     def __init__(self, type_name, original_description, inverted_description,
                  rule_test, condition=None):
         Rule.__init__(self, type_name, original_description, rule_test)
@@ -158,15 +158,15 @@ class ScreamingSnakeCaseRule(Rule):
                       case_rules.is_screaming_snake_case, allow_empty)
 
 
-class PostFixRule(ConditionalRule):
+class PostFixRule(InvertibleRule):
     def __init__(self, identifier, postfix, condition=None):
         self.postfix = postfix
         missing_description = 'does not have postfix "' + postfix + '"'
         redundant_description = 'has redundant postfix "' + postfix + '"',
         postfix_test = lambda n: n.endswith(self.postfix)
-        ConditionalRule.__init__(self, identifier, missing_description,
-                                 redundant_description, postfix_test,
-                                 condition)
+        InvertibleRule.__init__(self, identifier, missing_description,
+                                redundant_description, postfix_test,
+                                condition)
 
 
 def _variable_base_name(node):

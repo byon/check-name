@@ -226,11 +226,11 @@ def test_allowing_empty_name():
     assert [] == rule.test(_Node(name=''))
 
 
-def test_construction_of_conditional_rule():
+def test_construction_of_invertible_rule():
     test = MagicMock()
     condition = MagicMock()
-    rule = rules.ConditionalRule('identifier', 'original', 'inverted', test,
-                                 condition)
+    rule = rules.InvertibleRule('identifier', 'original', 'inverted', test,
+                                condition)
     assert rule.type_name == 'identifier'
     assert rule.rule_test == test
     assert rule.original_description == 'original'
@@ -238,27 +238,27 @@ def test_construction_of_conditional_rule():
     assert rule.condition == condition
 
 
-def test_conditional_rule_test_is_not_inverted_by_default():
+def test_invertible_rule_test_is_not_inverted_by_default():
     test = MagicMock(return_value=True)
-    rule = rules.ConditionalRule('', '', '', test)
+    rule = rules.InvertibleRule('', '', '', test)
     assert [] == rule.test(_Node(name=''))
 
 
-def test_conditional_rule_test_is_not_inverted_with_true_condition():
+def test_invertible_rule_test_is_not_inverted_with_true_condition():
     test = MagicMock(return_value=True)
-    rule = rules.ConditionalRule('', '', '', test, lambda _: True)
+    rule = rules.InvertibleRule('', '', '', test, lambda _: True)
     assert [] == rule.test(_Node(name=''))
 
 
-def test_conditional_rule_uses_original_description_with_true_condition():
+def test_invertible_rule_uses_original_description_with_true_condition():
     test = MagicMock(return_value=False)
-    rule = rules.ConditionalRule('', 'original', '', test, lambda _: True)
+    rule = rules.InvertibleRule('', 'original', '', test, lambda _: True)
     assert [rules.Error('', '', 'original')] == rule.test(_Node(name=''))
 
 
-def test_conditional_rule_uses_inverted_description_for_false_condition():
+def test_invertible_rule_uses_inverted_description_for_false_condition():
     test = MagicMock(return_value=True)
-    rule = rules.ConditionalRule('', '', 'inverted', test, lambda _: False)
+    rule = rules.InvertibleRule('', '', 'inverted', test, lambda _: False)
     assert [rules.Error('', '', 'inverted')] == rule.test(_Node(name=''))
 
 
