@@ -76,6 +76,11 @@ def test_filtering_is_done(analyse_nodes_tester):
         analyse_nodes_tester.filtering_options, node.location.file.name)
 
 
+def test_names_without_location_are_not_analysed(analyse_nodes_tester):
+    analyse_nodes_tester.with_locationless_node().test()
+    assert analyse_nodes_tester.analyser.call_count == 0
+
+
 def test_filtered_nodes_are_not_analysed(analyse_nodes_tester):
     analyse_nodes_tester.filter.return_value = True
     analyse_nodes_tester.with_namespace('Foo').test()
@@ -207,6 +212,10 @@ class _AnalyseNodesTester(_AnalyseTesterBase):
         self.root.new_non_definition()
         return self
 
+    def with_locationless_node(self):
+        self.root.new_locationless_node()
+        return self
+
 
 class _AnalyseNodeTester(_AnalyseTesterBase):
     def __init__(self):
@@ -275,6 +284,11 @@ class _Node:
     def new_unrecognized_node(self):
         type = clang.cindex.CursorKind.UNEXPOSED_DECL
         return self._add_child(_Node.create_node, type, 'irrelevant')
+
+    def new_locationless_node(self):
+        node = _Node('irrelevant')
+        node.location.file = None
+        return self._add_child(lambda _: node)
 
     def _new_node(self, type):
         node = _Node('irrelevant', type)

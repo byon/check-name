@@ -32,6 +32,8 @@ def analyse_translation_unit(output, translation_unit, filter_options):
 
 def analyse_nodes(output, node, filter_options, root=True):
     if not root:
+        if not node.location.file:
+            return
         if filter.should_filter(filter_options, node.location.file.name):
             return
         if node.kind.is_declaration() and node.is_definition():
