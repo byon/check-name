@@ -1,8 +1,65 @@
-C++ naming analyser for style used in my workplace. Just started, so don't expect this to be useful.
+C++ naming analyser for coding style used in my workplace. Implemented by using python bindings to libclang. So far tested only on Linux.
 
-Implemented by using python bindings to libclang. So far tested only on Linux.
+** Features of check-name
 
-NOTE: Currently requires minor modifications to the libclang python bindings, as they do not properly expose functionality for checking if method is virtual or pure virtual. The changes are minor to bindings/python/clang/cindex.py (I'll have to see, if I bother to ask for an official fix):
+The supported features include:
+  - Namespace is required to be in CamelCase
+  - Methods and functions are required to be in headlessCamelCase
+  - Types (classes, structs, template types, typedefs, enumerations) are required to be in CamelCase
+  - In addition classes (and structs) have also a few postfix rules:
+    - Interface classes are required to have -If postfix
+    - Abstract classes are required to have -Abs postix
+  - Enumeration constants are required to be in SCREAMING_SNAKE_CASE
+  - Variables have multiple rules
+    - Constants are required to be in SCREAMING_SNAKE_CASE
+    - Non-constants are required to be in headlessCamelCase (although the head may consists of a prefix, e.g. pPointer)
+    - For non-constants there are also various rules for pre- and postfixes for variable names, depending on the type and the scope of the variable. These are presented in the table below (note that smart pointers and smart arrays are regarded as pointers and arrays, respectively).
+
+*** Prefix and annex rules
+
+#+CAPTION: Prefix rules for variables (assuming a function scope)
+| Prefix | Variable type | Example        |
+|--------+---------------+----------------|
+| a      | Array         | aAadrvark      |
+| p      | Pointer       | pPointer       |
+| r      | Reference     | rRigorousCheck |
+|        |               |                |
+
+#+CAPTION: Postfix rules for variables
+| Prefix | Variable type | Example            |
+|--------+---------------+--------------------|
+| G      | Global        | transparencyOfFogG |
+| M      | Member        | pleasureMaximumM   |
+| P      | Parameter     | messagePumpP       |
+| S      | Static        | numberOfJowlsS     |
+
+The postfix and prefix rules are used in combination. As an example an array of id strings stored as member variable would require name of /apIdsM/.
+
+The rules check for missing post- and -prefixes and for redundant ones. That is, a parameter /missingSomethingInTheRearDepartment/ will cause a "Missing -P prefix" error, and a locally scoped variable /guysLookIHaveARedundantP/ will cause a "Redundant -P prefix" error.
+
+Note that the tool is not able to recognize the cases, where you would like to use the prefix/postfix characters as natural part of the name. That is /aListOfWafflesEatenToday/ (from "a list of waffles eaten today") will be thought of a name for array, and /averageP/ (from "average P", P as in Power) will be regarded as parameter.
+
+Also even if the name has a required prefix, but has also other unrecognized characters in the prefix part of the name, it will not be treated as a prefix. As an example, name /anOwl/ as not considered to be an array, even if it starts with an 'a'.
+
+*** What names are analysed?
+
+The tool will analyse the file and all the files included from it. It will not analyse files that are part of the standard library (or libclang's builtin headers). You can't change those names, so the errors would be pointless and annoying. You can also exclude specific directories, which will be handy to avoid analysing names from other 3rd party libraries or parts of your own application you do not inted to develop further.
+
+The tool will analyse only names that are both declarations and definitions as reported by libclang. In practice, it will analyse class definitions, function definitions, variable definitions, and enumerations. It will not analyse forward declarations (which would cause annoying erros from third party dependencies). Nor it will analyse just declarations, which means you get just one error for an illegal function. Not two from definition _and_ declaration.
+
+As a side effect, if for some reason you would declare a function without defining it (possibly in a library intending the user to define it), the declaration would not be analysed.
+
+Naturally the tool will skip parts of AST that are not names, such as statements or expressions.
+
+** Limitations
+
+The tool will not start the actual analysis, if the source code is not legal. That is, if libclang reports errors, the tool will report them to the user and stop immediately. Compilation warnings are also reported, but the analysis will continue despite them.
+
+** Requirements
+
+Requires libclang and its python binginds.
+
+NOTE: Currently requires minor modifications to the libclang python bindings, as they do not properly expose functionality for checking if method is virtual or pure virtual. The changes are minor to bindings/python/clang/cindex.py (I have not bothered to ask for an official fix). You need to add the following methods to class Cursor:
 #+BEGIN_SRC Python
 +    def is_pure_virtual_method(self):
 +        return conf.lib.clang_CXXMethod_isPureVirtual(self)
@@ -11,7 +68,6 @@ NOTE: Currently requires minor modifications to the libclang python bindings, as
 +        return conf.lib.clang_CXXMethod_isVirtual(self)
 +
 #+END_SRC
-
 
 ** Running the analyser
 
@@ -28,6 +84,8 @@ $ ./check_name.py --llvm_path ../vendor/llvm/build/Release/lib --target foo.cpp
 
 The rest of the options are passed to LLVM (e.g. include paths, preprocessor defines, etc.). Run check_name.py --help for more information.
 
+Most likely the tool would be most practical to run from a build tool, such as Ninja or Make. Then you could devise a target for running the analysis, and use the same compilation flags used in the real compilation.
+
 ** Testing
 
 Unit tests use pytest, so just:
@@ -41,3 +99,7 @@ Higher level tests are implemented using behave. They require that you have defi
 $ export LLVM_PATH=/home/byon/src/vendor/llvm/build/Release/lib
 $ behave
 #+END_EXAMPLE
+** Future plans
+At this very moment, I have no plans to develop the tool any further. The source code has a very permissive license. If you find the tool useful (that is, you are using very similar naming rules in your project), please feel free to fork and develop further.
+
+If I happen to start working on C++ code again, I may develop the code further. Probably adding support for configurable styles. Most likely the performance is not exactly top notch either. If you would like to have very snappy feedback, for instance as "wavy lines" in your editor), the execution will likely take too long for expensive files (large files or files that include loads of other files.
