@@ -27,19 +27,22 @@ import rules
 
 
 def analyse_translation_unit(output, translation_unit, filter_options):
-    analyse_nodes(output, translation_unit.cursor, filter_options)
+    analyse_children(output, translation_unit.cursor, filter_options)
 
 
-def analyse_nodes(output, node, filter_options, root=True):
-    if not root:
-        if not node.location.file:
-            return
-        if filter.should_filter(filter_options, node.location.file.name):
-            return
-        if node.kind.is_declaration() and node.is_definition():
-            analyse_node(output, node)
+def analyse_children(output, node, filter_options):
     for child in node.get_children():
-        analyse_nodes(output, child, filter_options, False)
+        analyse_nodes(output, child, filter_options)
+
+
+def analyse_nodes(output, node, filter_options):
+    if not node.location.file:
+        return
+    if filter.should_filter(filter_options, node.location.file.name):
+        return
+    if node.kind.is_declaration() and node.is_definition():
+        analyse_node(output, node)
+    analyse_children(output, node, filter_options)
 
 
 def analyse_node(output, node):

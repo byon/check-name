@@ -72,7 +72,7 @@ def test_analysing_nested_nodes(analyse_nodes_tester):
 def test_filtering_is_done(analyse_nodes_tester):
     node = analyse_nodes_tester.root.new_namespace('Foo')
     analyse_nodes_tester.test()
-    analyse_nodes_tester.filter.assert_called_once_with(
+    analyse_nodes_tester.filter.assert_any_call(
         analyse_nodes_tester.filtering_options, node.location.file.name)
 
 
@@ -85,11 +85,6 @@ def test_filtered_nodes_are_not_analysed(analyse_nodes_tester):
     analyse_nodes_tester.filter.return_value = True
     analyse_nodes_tester.with_namespace('Foo').test()
     assert analyse_nodes_tester.analyser.call_count == 0
-
-
-def test_root_is_not_checked_for_filtering(analyse_nodes_tester):
-    analyse_nodes_tester.test()
-    assert analyse_nodes_tester.filter.call_count == 0
 
 
 def test_node_is_passed_for_identification(analyse_node_tester):
