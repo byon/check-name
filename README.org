@@ -1,4 +1,4 @@
-C++ naming analyser for coding style used in my workplace. Implemented by using python bindings to libclang. So far tested only on Linux.
+C++ naming analyser for coding style used in my workplace. Implemented by using python bindings to [[http://clang.llvm.org/docs/Tooling.html][libclang]]. So far tested only on Linux.
 
 ** Features of check-name
 
@@ -12,7 +12,7 @@ The supported features include:
   - Enumeration constants are required to be in SCREAMING_SNAKE_CASE
   - Variables have multiple rules
     - Constants are required to be in SCREAMING_SNAKE_CASE
-    - Non-constants are required to be in headlessCamelCase (although the head may consists of a prefix, e.g. pPointer)
+    - Non-constants are required to be in headlessCamelCase (although the "head" may consist only of a prefix, e.g. pPointer)
     - For non-constants there are also various rules for pre- and postfixes for variable names, depending on the type and the scope of the variable. These are presented in the table below (note that smart pointers and smart arrays are regarded as pointers and arrays, respectively).
 
 *** Prefix and annex rules
@@ -20,10 +20,9 @@ The supported features include:
 #+CAPTION: Prefix rules for variables (assuming a function scope)
 | Prefix | Variable type | Example        |
 |--------+---------------+----------------|
-| a      | Array         | aAadrvark      |
+| a      | Array         | aAadrvarkNest  |
 | p      | Pointer       | pPointer       |
 | r      | Reference     | rRigorousCheck |
-|        |               |                |
 
 #+CAPTION: Postfix rules for variables
 | Prefix | Variable type | Example            |
@@ -43,13 +42,13 @@ Also even if the name has a required prefix, but has also other unrecognized cha
 
 *** What names are analysed?
 
-The tool will analyse the file and all the files included from it. It will not analyse files that are part of the standard library (or libclang's builtin headers). You can't change those names, so the errors would be pointless and annoying. You can also exclude specific directories, which will be handy to avoid analysing names from other 3rd party libraries or parts of your own application you do not inted to develop further.
+The tool will analyse the file and all the files included from it. It will not analyse files that are part of the standard library (or libclang's builtin headers). You can't change those names, so the errors would be pointless and annoying. You can also exclude specific directories, which will be handy to avoid analysing names from other 3rd party libraries or parts of your own application you do not intend to develop further.
 
-The tool will analyse only names that are both declarations and definitions as reported by libclang. In practice, it will analyse class definitions, function definitions, variable definitions, and enumerations. It will not analyse forward declarations (which would cause annoying erros from third party dependencies). Nor it will analyse just declarations, which means you get just one error for an illegal function. Not two from definition _and_ declaration.
+The tool will analyse only names that are both declarations and definitions as reported by libclang. In practice, it will analyse class definitions, function definitions, variable definitions, and enumerations. It will not analyse forward declarations (which would cause annoying errors from third party dependencies). Nor it will analyse just declarations, which means you get just one error for an illegal function. Not two from definition _and_ declaration.
 
 As a side effect, if for some reason you would declare a function without defining it (possibly in a library intending the user to define it), the declaration would not be analysed.
 
-Naturally the tool will skip parts of AST that are not names, such as statements or expressions.
+Naturally the tool will skip parts of AST that do not have names, such as statements or expressions.
 
 ** Limitations
 
@@ -59,7 +58,7 @@ The tool will not start the actual analysis, if the source code is not legal. Th
 
 Requires libclang and its python binginds.
 
-NOTE: Currently requires minor modifications to the libclang python bindings, as they do not properly expose functionality for checking if method is virtual or pure virtual. The changes are minor to bindings/python/clang/cindex.py (I have not bothered to ask for an official fix). You need to add the following methods to class Cursor:
+NOTE: Currently requires minor modifications to the libclang python bindings, as they do not properly expose functionality for checking if method is virtual or pure virtual. The changes are minor and I have not bothered to ask for an official fix. You need to add the following methods to class Cursor in bindings/python/clang/cindex.py:
 #+BEGIN_SRC Python
 +    def is_pure_virtual_method(self):
 +        return conf.lib.clang_CXXMethod_isPureVirtual(self)
@@ -88,12 +87,12 @@ Most likely the tool would be most practical to run from a build tool, such as N
 
 ** Testing
 
-Unit tests use pytest, so just:
+Unit tests use [[http://pytest.org/][pytest]], so just:
 #+BEGIN_EXAMPLE
 $ py.test
 #+END_EXAMPLE
 
-Higher level tests are implemented using behave. They require that you have defined path to the LLVM dynamic library location as LLVM_PATH environment variable. After that you can run behave.
+Higher level tests are implemented using [[http://pythonhosted.org/behave/][behave]]. They require that you have defined path to the LLVM dynamic library location as LLVM_PATH environment variable. After that you can run behave.
 
 #+BEGIN_EXAMPLE
 $ export LLVM_PATH=/home/byon/src/vendor/llvm/build/Release/lib
