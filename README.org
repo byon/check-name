@@ -21,7 +21,7 @@ The supported features include:
     - Non-constants are required to be in headlessCamelCase (although the "head" may consist only of a prefix, e.g. pPointer)
     - For non-constants there are also various rules for pre- and postfixes for variable names, depending on the type and the scope of the variable. These are presented in the table below (note that smart pointers and smart arrays are regarded as pointers and arrays, respectively).
 
-*** Prefix and annex rules
+*** Prefix and postfix rules
 
 #+CAPTION: Prefix rules for variables (assuming a function scope)
 | Prefix | Variable type | Example        |
@@ -107,6 +107,6 @@ $ behave
 ** Future plans
 At this very moment, I have no plans to develop the tool any further. The source code has a very permissive license. If you find the tool useful (that is, you are using very similar naming rules in your project), please feel free to fork and develop further.
 
-If I happen to start working on C++ code again, I may develop the code further. Probably adding support for configurable styles. Most likely the performance is not exactly top notch either. If you would like to have very snappy feedback, for instance as "wavy lines" in your editor), the execution will likely take too long for expensive files (large files or files that include loads of other files.
+If I happen to start working on C++ code again, I may develop the code further. Probably adding support for configurable styles. Most likely the performance is not exactly top notch either. If you would like to have very snappy feedback (for instance as "wavy lines" in your editor), the execution will likely take too long for expensive files (large files or files that include loads of other files).
 
 Also if you currently are working in a code base that uses naming style that you are not comfortable with, you could turn your problem the other way around. Instead of analysing the source code to show violations, you could modify the source code to follow rules that are more to your taste. The libclang library seems to be well suited for this kind of task as well.
