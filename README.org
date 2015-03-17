@@ -31,12 +31,12 @@ The supported features include:
 | r      | Reference     | rRigorousCheck |
 
 #+CAPTION: Postfix rules for variables
-| Prefix | Variable type | Example            |
-|--------+---------------+--------------------|
-| G      | Global        | transparencyOfFogG |
-| M      | Member        | pleasureMaximumM   |
-| P      | Parameter     | messagePumpP       |
-| S      | Static        | numberOfJowlsS     |
+| Postfix | Variable type | Example            |
+|---------+---------------+--------------------|
+| G       | Global        | transparencyOfFogG |
+| M       | Member        | pleasureMaximumM   |
+| P       | Parameter     | messagePumpP       |
+| S       | Static        | numberOfJowlsS     |
 
 The postfix and prefix rules are used in combination. As an example an array of id strings stored as member variable would require name of /apIdsM/.
 
